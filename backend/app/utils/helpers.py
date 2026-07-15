@@ -50,3 +50,13 @@ def truncate_text(text: str, max_length: int = 200) -> str:
     if len(text) <= max_length:
         return text
     return text[: max_length - 3] + "..."
+
+
+def generate_check_in_code() -> str:
+    """Generate a unique check-in code for ticket QR verification."""
+    return secrets.token_hex(16)
+
+
+def verify_check_in_code(stored_code: str, provided_code: str) -> bool:
+    """Constant-time comparison to prevent timing attacks on check-in codes."""
+    return secrets.compare_digest(stored_code, provided_code)

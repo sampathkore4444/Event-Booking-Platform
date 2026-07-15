@@ -42,6 +42,11 @@ class Booking(Base):
     # Special requests
     special_requests = Column(Text, nullable=True)
 
+    # Check-in fields (for QR code scanning at the door)
+    check_in_code = Column(String(64), unique=True, index=True, nullable=True)
+    checked_in_at = Column(DateTime, nullable=True)
+    checked_in_by = Column(String(36), nullable=True)  # organizer user ID
+
     # Foreign Keys
     user_id = Column(
         String(36), ForeignKey("users.id"), nullable=False

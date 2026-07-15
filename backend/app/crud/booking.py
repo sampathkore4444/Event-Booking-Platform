@@ -10,7 +10,7 @@ from app.core.exceptions import (
     BookingException,
     BadRequestException,
 )
-from app.utils.helpers import generate_booking_reference, calculate_total_price
+from app.utils.helpers import generate_booking_reference, calculate_total_price, generate_check_in_code
 
 
 class CRUDBooking:
@@ -168,6 +168,27 @@ class CRUDBooking:
         booking.status = BookingStatus.CONFIRMED
         booking.confirmed_at = datetime.utcnow()
         booking.is_paid = True
+        # Generate unique check-in code for QR ticket
+        if not booking.check_in_code:
+            booking.check_in_code = generate_check_in_code()
+        db.add(booking)
+        db.commit()
+        db.refresh(booking)
+        return booking
+
+    def check_in(self, db: Session, *, booking_id: str, checked_in_by: str) -> Booking:
+        """Mark a booking as checked-in at the event door."""
+        booking = self.get(db, booking_id)
+        if not booking:
+            raise NotFoundException("Booking", booking_id)
+        if booking.status != BookingStatus.CONFIRMED:
+            raise BookingException(
+                f"Cannot check-in booking with status '{booking.status.value}'"
+            )
+        if booking.checked_in_at:
+            raise BookingException("Booking already checked in")
+        booking.checked_in_at = datetime.utcnow()
+        booking.checked_in_by = checked_in_by
         db.add(booking)
         db.commit()
         db.refresh(booking)

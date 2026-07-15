@@ -10,6 +10,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
+import MyTicketPage from './pages/MyTicketPage';
 
 // Protected route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -78,6 +79,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <CreateEventPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ticket/:bookingId"
+          element={
+            <ProtectedRoute>
+              <MyTicketPage />
             </ProtectedRoute>
           }
         />

@@ -42,6 +42,10 @@ class BookingResponse(BookingBase):
     created_at: datetime
     updated_at: datetime
 
+    # Check-in fields (for QR ticket system)
+    check_in_code: Optional[str] = None
+    checked_in_at: Optional[datetime] = None
+
     # Nested relationships (lazy loaded via selectin)
     event: Optional["EventResponse"] = None
     user: Optional["UserResponse"] = None
