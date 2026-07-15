@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
-from typing import Any, Optional
+from typing import Any, Optional, List
 
 from app.database import get_db
 from app.core.deps import (
@@ -8,7 +8,7 @@ from app.core.deps import (
     get_optional_user,
     require_admin,
 )
-from app.core.exceptions import ForbiddenException, NotFoundException
+from app.core.exceptions import ForbiddenException, NotFoundException, BookingException
 from app.crud.booking import crud_booking
 from app.crud.event import crud_event
 from app.schemas.booking import (
@@ -145,6 +145,28 @@ async def update_booking(
     return booking
 
 
+@router.get("/bookings/organizer/pending-qr", response_model=List[BookingResponse])
+async def get_organizer_pending_qr_bookings(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Any:
+    """
+    Get all pending QR code payment bookings for the current user's events.
+    Used by organizers to view and manually confirm Cambodia QR payments.
+    """
+    bookings = crud_booking.get_multi(
+        db,
+        organizer_id=current_user.id,
+        status=BookingStatus.PENDING,
+    )
+    # Filter to only Cambodia QR payment bookings
+    qr_bookings = []
+    for booking in bookings:
+        if booking.payment_method == "cambodia_qr" or booking.payment_status == "pending_qr":
+            qr_bookings.append(booking)
+    return qr_bookings
+
+
 @router.post(
     "/bookings/{booking_id}/cancel",
     response_model=BookingResponse,
@@ -165,6 +187,94 @@ async def cancel_booking(
     ):
         raise ForbiddenException("Cannot cancel this booking")
     booking = crud_booking.cancel(db, booking_id=booking_id, refund=refund)
+    return booking
+
+
+@router.post(
+    "/bookings/{booking_id}/confirm-qr",
+    response_model=BookingResponse,
+)
+async def confirm_qr_payment(
+    booking_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Any:
+    """
+    Organizer manually confirms a Cambodia QR payment.
+    Marks the booking as confirmed and paid.
+    Only the event organizer can confirm QR payments for their events.
+    """
+    booking = crud_booking.get(db, booking_id)
+    if not booking:
+        raise NotFoundException("Booking", booking_id)
+
+    # Get the event to check organizer
+    event = crud_event.get(db, booking.event_id)
+    if not event:
+        raise NotFoundException("Event", booking.event_id)
+
+    # Only admin or the event organizer can confirm
+    if current_user.role != UserRole.ADMIN and event.organizer_id != current_user.id:
+        raise ForbiddenException("Only the event organizer can confirm QR payments")
+
+    # Verify it's a QR payment
+    if booking.payment_method != "cambodia_qr":
+        raise BookingException("This booking doesn't use QR code payment")
+
+    # Verify it's still pending
+    if booking.status != BookingStatus.PENDING:
+        raise BookingException(
+            f"Cannot confirm booking with status '{booking.status.value}'"
+        )
+
+    # Confirm the booking
+    booking = crud_booking.confirm(db, booking_id=booking_id)
+
+    # Update payment status
+    crud_booking.update(
+        db,
+        db_obj=booking,
+        obj_in=BookingUpdate(
+            payment_status="confirmed_by_organizer",
+        ),
+    )
+
+    return booking
+
+
+@router.post(
+    "/bookings/{booking_id}/reject-qr",
+    response_model=BookingResponse,
+)
+async def reject_qr_payment(
+    booking_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Any:
+    """
+    Organizer rejects a Cambodia QR payment.
+    Cancels the booking and returns tickets to the event pool.
+    """
+    booking = crud_booking.get(db, booking_id)
+    if not booking:
+        raise NotFoundException("Booking", booking_id)
+
+    event = crud_event.get(db, booking.event_id)
+    if not event:
+        raise NotFoundException("Event", booking.event_id)
+
+    if current_user.role != UserRole.ADMIN and event.organizer_id != current_user.id:
+        raise ForbiddenException("Only the event organizer can reject QR payments")
+
+    if booking.payment_method != "cambodia_qr":
+        raise BookingException("This booking doesn't use QR code payment")
+
+    if booking.status != BookingStatus.PENDING:
+        raise BookingException(
+            f"Cannot reject booking with status '{booking.status.value}'"
+        )
+
+    booking = crud_booking.cancel(db, booking_id=booking_id, refund=False)
     return booking
 
 

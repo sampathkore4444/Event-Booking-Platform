@@ -43,6 +43,23 @@ class BookingService {
   async getEventBookings(eventId: string): Promise<{ bookings: Booking[]; total: number }> {
     return apiClient.get<{ bookings: Booking[]; total: number }>(`/events/${eventId}/bookings`);
   }
+
+  // --- Organizer QR Payment Management ---
+
+  /** Get all pending QR payment bookings for the organizer's events */
+  async getPendingQRBookings(): Promise<Booking[]> {
+    return apiClient.get<Booking[]>('/bookings/organizer/pending-qr');
+  }
+
+  /** Confirm a Cambodia QR payment as an organizer */
+  async confirmQRPayment(bookingId: string): Promise<Booking> {
+    return apiClient.post<Booking>(`/bookings/${bookingId}/confirm-qr`);
+  }
+
+  /** Reject a Cambodia QR payment as an organizer */
+  async rejectQRPayment(bookingId: string): Promise<Booking> {
+    return apiClient.post<Booking>(`/bookings/${bookingId}/reject-qr`);
+  }
 }
 
 export const bookingService = new BookingService();
