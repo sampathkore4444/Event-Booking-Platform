@@ -204,6 +204,31 @@ async def generate_qr_payment(
         f"for {booking.quantity} ticket(s)."
     )
 
+    # Notify the event organizer about the new QR payment
+    try:
+        from app.services.email import email_service
+        from app.services.email_templates import organizer_qr_notification_email
+
+        organizer = event.organizer if event.organizer else None
+        if organizer and organizer.email:
+            html = organizer_qr_notification_email(
+                organizer_name=organizer.full_name,
+                attendee_name=current_user.full_name,
+                attendee_email=current_user.email,
+                event_title=event.title,
+                quantity=booking.quantity,
+                total_price=booking.total_price,
+                currency=booking.currency,
+                booking_reference=booking.booking_reference,
+            ).replace("{{dashboard_url}}", f"{email_service.get_frontend_url()}/dashboard")
+            await email_service.send_email(
+                to_email=organizer.email,
+                subject=f"New QR Payment: {event.title} - {current_user.full_name}",
+                html_content=html,
+            )
+    except Exception as e:
+        print(f"generate-qr: failed to notify organizer: {e}")
+
     return QRPaymentResponse(
         qr_base64=qr_base64,
         khqr_string=khqr_string,
@@ -276,7 +301,7 @@ async def _handle_checkout_completed(session: dict) -> None:
             return
 
         # Confirm the booking
-        crud_booking.confirm(db, booking_id=booking_id)
+        booking = crud_booking.confirm(db, booking_id=booking_id)
 
         # Update payment details
         crud_booking.update(
@@ -288,6 +313,37 @@ async def _handle_checkout_completed(session: dict) -> None:
             ),
         )
         print(f"Stripe webhook: booking {booking_id} confirmed successfully")
+
+        # Send confirmation email to the attendee
+        try:
+            from app.services.email import email_service
+            from app.services.email_templates import booking_confirmation_email
+
+            user = booking.user
+            event = booking.event
+            if user and event:
+                event_date_str = event.start_date.strftime("%b %d, %Y at %I:%M %p") if event.start_date else "TBD"
+                event_location = f"{event.city}, {event.country}"
+                html = booking_confirmation_email(
+                    attendee_name=user.full_name,
+                    event_title=event.title,
+                    event_date=event_date_str,
+                    event_location=event_location,
+                    quantity=booking.quantity,
+                    total_price=booking.total_price,
+                    currency=booking.currency,
+                    booking_reference=booking.booking_reference,
+                    is_paid=True,
+                    payment_method=booking.payment_method or "stripe_checkout",
+                ).replace("{{dashboard_url}}", f"{email_service.get_frontend_url()}/dashboard")
+                await email_service.send_email(
+                    to_email=user.email,
+                    subject=f"Payment Confirmed: {event.title} 🎉",
+                    html_content=html,
+                )
+        except Exception as e:
+            print(f"Stripe webhook: failed to send email: {e}")
+
     except Exception as e:
         print(f"Stripe webhook error: {e}")
     finally:

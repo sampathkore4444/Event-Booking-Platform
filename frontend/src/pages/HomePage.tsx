@@ -163,13 +163,11 @@ const HomePage: React.FC = () => {
 
             {/* Search Bar */}
             <div className="max-w-xl mx-auto">
-              <Link
-                to="/events"
-                className="flex items-center gap-3 bg-white rounded-2xl p-2 shadow-2xl hover:shadow-2xl transition-shadow group"
-              >
+              <div className="flex items-center gap-3 bg-white rounded-2xl p-2 shadow-2xl hover:shadow-2xl transition-shadow">
                 <div className="flex-1 flex items-center gap-3 px-4">
                   <Search className="w-5 h-5 text-gray-400" />
                   <input
+                    id="hero-search"
                     type="text"
                     placeholder="Search events by name, city, or category..."
                     value={searchQuery}
@@ -188,7 +186,7 @@ const HomePage: React.FC = () => {
                 >
                   Search
                 </Link>
-              </Link>
+              </div>
             </div>
 
             {/* Quick stats */}

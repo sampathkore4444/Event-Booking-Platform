@@ -19,6 +19,13 @@ from app.schemas.booking import (
 )
 from app.models.booking import BookingStatus
 from app.models.user import User, UserRole
+from app.services.email import email_service
+from app.services.email_templates import (
+    booking_confirmation_email,
+    booking_cancelled_email,
+    qr_payment_confirmed_email,
+    qr_payment_rejected_email,
+)
 
 router = APIRouter()
 
@@ -118,6 +125,30 @@ async def create_booking(
     booking = crud_booking.create(
         db, obj_in=obj_in, user_id=current_user.id
     )
+
+    # Send confirmation email for free events (auto-confirmed)
+    if booking.total_price == 0 and booking.status == BookingStatus.CONFIRMED:
+        event = crud_event.get(db, booking.event_id)
+        if event and event.organizer:
+            event_date_str = event.start_date.strftime("%b %d, %Y at %I:%M %p") if event.start_date else "TBD"
+            event_location = f"{event.city}, {event.country}"
+            html = booking_confirmation_email(
+                attendee_name=current_user.full_name,
+                event_title=event.title,
+                event_date=event_date_str,
+                event_location=event_location,
+                quantity=booking.quantity,
+                total_price=booking.total_price,
+                currency=booking.currency,
+                booking_reference=booking.booking_reference,
+                is_paid=True,
+            ).replace("{{dashboard_url}}", f"{email_service.get_frontend_url()}/dashboard")
+            await email_service.send_email(
+                to_email=current_user.email,
+                subject=f"Booking Confirmed: {event.title} 🎉",
+                html_content=html,
+            )
+
     return booking
 
 
@@ -187,6 +218,23 @@ async def cancel_booking(
     ):
         raise ForbiddenException("Cannot cancel this booking")
     booking = crud_booking.cancel(db, booking_id=booking_id, refund=refund)
+
+    # Get the attendee and event for the email
+    user = booking.user
+    event = booking.event
+    if user and event:
+        html = booking_cancelled_email(
+            attendee_name=user.full_name,
+            event_title=event.title,
+            booking_reference=booking.booking_reference,
+            is_refund=refund,
+        ).replace("{{explore_url}}", f"{email_service.get_frontend_url()}/events")
+        await email_service.send_email(
+            to_email=user.email,
+            subject=f"Booking Cancelled: {event.title}",
+            html_content=html,
+        )
+
     return booking
 
 
@@ -239,6 +287,27 @@ async def confirm_qr_payment(
         ),
     )
 
+    # Send confirmation email to attendee
+    user = booking.user
+    if user and event:
+        event_date_str = event.start_date.strftime("%b %d, %Y at %I:%M %p") if event.start_date else "TBD"
+        event_location = f"{event.city}, {event.country}"
+        html = qr_payment_confirmed_email(
+            attendee_name=user.full_name,
+            event_title=event.title,
+            event_date=event_date_str,
+            event_location=event_location,
+            quantity=booking.quantity,
+            total_price=booking.total_price,
+            currency=booking.currency,
+            booking_reference=booking.booking_reference,
+        ).replace("{{dashboard_url}}", f"{email_service.get_frontend_url()}/dashboard")
+        await email_service.send_email(
+            to_email=user.email,
+            subject=f"Payment Confirmed: {event.title} ✅",
+            html_content=html,
+        )
+
     return booking
 
 
@@ -275,6 +344,21 @@ async def reject_qr_payment(
         )
 
     booking = crud_booking.cancel(db, booking_id=booking_id, refund=False)
+
+    # Send rejection email to attendee
+    user = booking.user
+    if user and event:
+        html = qr_payment_rejected_email(
+            attendee_name=user.full_name,
+            event_title=event.title,
+            booking_reference=booking.booking_reference,
+        ).replace("{{dashboard_url}}", f"{email_service.get_frontend_url()}/dashboard")
+        await email_service.send_email(
+            to_email=user.email,
+            subject=f"Payment Not Confirmed: {event.title}",
+            html_content=html,
+        )
+
     return booking
 
 
