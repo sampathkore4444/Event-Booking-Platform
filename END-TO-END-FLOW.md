@@ -877,22 +877,24 @@ The platform uses **React built-in state management** (no Redux):
 ### 7.3 Routing
 
 ```
-Path                Component        Protection         Role Check
+Path                Component        Protection         Route Guard
 /                   HomePage         Public             —
 /events             EventsPage       Public             —
 /events/:slug       EventDetailPage  Public             —
-/events/create      CreateEventPage  Authenticated       (organizer guard)
+/events/create      CreateEventPage  Authenticated       ProtectedRoute (in-page organizer check)
 /login              LoginPage        Public             —
 /register           RegisterPage     Public             —
-/dashboard          DashboardPage    Authenticated      —
-/profile            ProfilePage      Authenticated      —
-/ticket/:bookingId  MyTicketPage     Authenticated      —
-/analytics          AnalyticsPage    Authenticated      —
-/admin              AdminPage        Authenticated       Admin only
+/dashboard          DashboardPage    Authenticated       ProtectedRoute
+/profile            ProfilePage      Authenticated       ProtectedRoute
+/ticket/:bookingId  MyTicketPage     Authenticated       ProtectedRoute
+/analytics          AnalyticsPage    Authenticated       ProtectedRoute
+/admin              AdminPage        Admin only          AdminRoute
 ```
 
-Protected routes use `<ProtectedRoute>` wrapper that checks `isAuthenticated` from `useAuth()` context.
-Organizer-only features (CreateEvent, QR Payments tab, analytics) use `isOrganizer` checks inside the component.
+**Route guards available in `App.tsx`:**
+- `ProtectedRoute` — Redirects unauthenticated users to `/login`
+- `OrganizerRoute` — Redirects non-organizer users to `/` (used inside pages, not routes)
+- `AdminRoute` — Redirects non-admin users to `/` (used for `/admin` route)
 
 ### 7.4 Styling (Tailwind CSS)
 
