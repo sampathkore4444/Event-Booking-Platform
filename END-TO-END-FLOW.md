@@ -118,13 +118,64 @@ External Services:
 
 ## 2. User Roles & Permissions
 
-### Roles
+### User Types Explained
 
-| Role | Enum Value | Description |
-|------|-----------|-------------|
-| **Admin** | `admin` | Full system access, can manage all users, events, bookings |
-| **Organizer** | `organizer` | Can create/manage own events, view analytics, confirm QR payments |
-| **Attendee** | `attendee` | Can browse events, book tickets, leave reviews |
+| State | How the system knows | Backend dependency | Frontend property |
+|-------|---------------------|-------------------|-------------------|
+| **Guest** | No JWT token in request / `localStorage` | `get_optional_user` returns `None` | `isAuthenticated = false` |
+| **Attendee** | `users.role = "attendee"` (default on register) | `current_user.role == UserRole.ATTENDEE` | `user?.role === 'attendee'` |
+| **Organizer** | `users.role = "organizer"` (set by admin) | `current_user.role == UserRole.ORGANIZER` | `user?.role === 'organizer'` |
+| **Admin** | `users.role = "admin"` (seed user or promoted) | `current_user.role == UserRole.ADMIN` | `user?.role === 'admin'` |
+
+Detailed role determination flow:
+```
+User opens app
+    │
+    ├── No JWT token → GUEST
+    │     ├─ Can browse events, view details
+    │     └─ Cannot book, create events, or access /dashboard
+    │
+    ├── Has JWT → GET /api/v1/users/me → User object
+    │     │
+    │     ├── role='attendee' → ATTENDEE
+    │     │     ├─ Can book tickets, leave reviews
+    │     │     └─ Cannot create events, manage users
+    │     │
+    │     ├── role='organizer' → ORGANIZER
+    │     │     ├─ Can create events, view analytics
+    │     │     ├─ Can confirm QR Cambodia payments
+    │     │     └─ Cannot manage users (no /admin access)
+    │     │
+    │     └── role='admin' → ADMIN
+    │           ├─ Can manage ALL users (Admin Panel at /admin)
+    │           ├─ Can change any user's role
+    │           ├─ Can feature events, toggle status
+    │           └─ Inherits all organizer + attendee permissions
+```
+
+### Frontend Role Detection (useAuth hook)
+
+```typescript
+const { user, isAuthenticated, isAdmin, isOrganizer } = useAuth();
+
+isAdmin: user?.role === 'admin',                     // Strict admin check
+isOrganizer: user?.role === 'organizer' || user?.role === 'admin',  // Admin inherits
+```
+
+### How Users Become Organizers
+
+Only an `admin` user can promote an attendee to organizer:
+```
+Admin logs in → Profile dropdown → Admin Panel (/admin)
+    │
+    ├── Search or filter users
+    ├── Find the attendee to promote
+    └── Change their role dropdown from "Attendee" → "Organizer"
+         │
+         └── PUT /api/v1/users/{id}/role { role: "organizer" }
+              → User's role updated instantly
+              → User sees organizer features on next page load
+```
 
 ### Permission Matrix
 
@@ -138,7 +189,10 @@ External Services:
 | Manage own events | ✅ | ✅ | ❌ | ❌ |
 | View analytics | ✅ | ✅ | ❌ | ❌ |
 | Confirm QR payments | ✅ | ✅ | ❌ | ❌ |
-| Manage all users | ✅ | ❌ | ❌ | ❌ |
+| Access Admin Panel (/admin) | ✅ | ❌ | ❌ | ❌ |
+| Change user roles | ✅ | ❌ | ❌ | ❌ |
+| Activate/deactivate users | ✅ | ❌ | ❌ | ❌ |
+| Feature events globally | ✅ | ❌ | ❌ | ❌ |
 | Check in attendees | ✅ | ✅ | ❌ | ❌ |
 
 ---
@@ -415,7 +469,28 @@ See Section 8 for full details.
 - Top performing events table
 - Bottom stats: Active Organizers, Pending Bookings, Total Events
 
-### 4.10 Profile Settings (`/profile`)
+### 4.10 Admin Panel (`/admin`)
+
+**Frontend:** `AdminPage.tsx`
+**Backend endpoints:**
+- `GET /api/v1/users` — List all users (admin only)
+- `PUT /api/v1/users/{id}/role` — Change user role (admin only)
+- `POST /api/v1/users/{id}/activate` — Activate user
+- `POST /api/v1/users/{id}/deactivate` — Deactivate user
+- `POST /api/v1/users/{id}/verify` — Verify user email
+
+**Flow:**
+1. Admin navigates to `/admin` (link in profile dropdown)
+2. Stats cards show: total users, admin/organizer/attendee counts
+3. Search bar: filter by name, email, or username
+4. Role filter buttons: All / Attendee / Organizer / Admin
+5. Users table shows: avatar, name, username, email, role (dropdown), active status (toggle), verified status
+6. Role change dropdown: select new role → immediate API call
+7. Active/inactive toggle: click to activate or deactivate
+8. Verify button: verify unverified users
+9. Pagination: Previous / Next
+
+### 4.11 Profile Settings (`/profile`)
 
 **Frontend:** `ProfilePage.tsx`
 **Backend endpoint:**
@@ -489,6 +564,10 @@ In production, both frontend and backend are served from the same domain or a re
 | GET | `/api/v1/users` | Admin | List all users (paginated) |
 | GET | `/api/v1/users/{id}` | Admin | Get user by ID |
 | PUT | `/api/v1/users/{id}` | Admin | Update any user |
+| PUT | `/api/v1/users/{id}/role` | Admin | Change user's role (`attendee`, `organizer`, `admin`) |
+| POST | `/api/v1/users/{id}/activate` | Admin | Activate a deactivated user |
+| POST | `/api/v1/users/{id}/deactivate` | Admin | Deactivate a user account |
+| POST | `/api/v1/users/{id}/verify` | Admin | Mark user email as verified |
 
 #### Events
 
@@ -798,20 +877,22 @@ The platform uses **React built-in state management** (no Redux):
 ### 7.3 Routing
 
 ```
-Path                Component        Protection
-/                   HomePage         Public
-/events             EventsPage       Public
-/events/:slug       EventDetailPage  Public
-/events/create      CreateEventPage  Authenticated
-/login              LoginPage        Public
-/register           RegisterPage     Public
-/dashboard          DashboardPage    Authenticated
-/profile            ProfilePage      Authenticated
-/ticket/:bookingId  MyTicketPage     Authenticated
-/analytics          AnalyticsPage    Authenticated
+Path                Component        Protection         Role Check
+/                   HomePage         Public             —
+/events             EventsPage       Public             —
+/events/:slug       EventDetailPage  Public             —
+/events/create      CreateEventPage  Authenticated       (organizer guard)
+/login              LoginPage        Public             —
+/register           RegisterPage     Public             —
+/dashboard          DashboardPage    Authenticated      —
+/profile            ProfilePage      Authenticated      —
+/ticket/:bookingId  MyTicketPage     Authenticated      —
+/analytics          AnalyticsPage    Authenticated      —
+/admin              AdminPage        Authenticated       Admin only
 ```
 
 Protected routes use `<ProtectedRoute>` wrapper that checks `isAuthenticated` from `useAuth()` context.
+Organizer-only features (CreateEvent, QR Payments tab, analytics) use `isOrganizer` checks inside the component.
 
 ### 7.4 Styling (Tailwind CSS)
 
@@ -1267,9 +1348,11 @@ npm run test:e2e:debug
 ## 12. Production Checklist
 
 - [ ] Change `SECRET_KEY` to a strong random value
-- [ ] Set `DEBUG=false`
-- [ ] Set `APP_ENV=production`
-- [ ] Switch to PostgreSQL (`DATABASE_URL=postgresql://...`)
+      Run: `python -c "import secrets; print(secrets.token_urlsafe(64))"` and paste the output into `.env`
+- [ ] Set `DEBUG=false` and `APP_ENV=production`
+- [ ] Switch to PostgreSQL:
+      `DATABASE_URL=postgresql://user:password@localhost:5432/event_booking`
+      (psycopg2-binary is already in requirements.txt)
 - [ ] Configure `CORS_ORIGINS` to your actual frontend domain
 - [ ] Configure Stripe keys (live keys, not test keys)
 - [ ] Set up Stripe webhook endpoint in Stripe Dashboard
@@ -1284,3 +1367,5 @@ npm run test:e2e:debug
 - [ ] Set up monitoring (health check endpoint at `/health`)
 - [ ] Configure rate limiting for production traffic
 - [ ] Add CDN for static assets
+- [ ] **Promote users to organizer role** via Admin Panel at `/admin` (only the seed admin can do this)
+- [ ] Remove default placeholder SECRET_KEY from `.env.example` before deployment
