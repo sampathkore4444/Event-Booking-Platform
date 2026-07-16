@@ -3,8 +3,8 @@ import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 import { apiClient } from '../services/api';
 import {
-  Users, Shield, Search, Filter,
-  CheckCircle, XCircle, UserPlus,
+  Users, Shield, Search,
+  CheckCircle, XCircle, UserPlus, AlertTriangle,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -31,6 +31,12 @@ const AdminPage: React.FC = () => {
   const [page, setPage] = useState(0);
   const [pageSize] = useState(20);
   const [changingRole, setChangingRole] = useState<string | null>(null);
+  const [confirmRoleChange, setConfirmRoleChange] = useState<{
+    userId: string;
+    userName: string;
+    currentRole: string;
+    newRole: string;
+  } | null>(null);
 
   const fetchUsers = useCallback(async () => {
     setIsLoading(true);
@@ -46,7 +52,7 @@ const AdminPage: React.FC = () => {
       setUsers(data);
     } catch (err) {
       console.error('Failed to fetch users:', err);
-      toast.error('Failed to load users');
+      toast.error(t('common.error'));
     } finally {
       setIsLoading(false);
     }
@@ -56,15 +62,23 @@ const AdminPage: React.FC = () => {
     fetchUsers();
   }, [fetchUsers]);
 
-  const handleChangeRole = async (userId: string, newRole: string) => {
+  const handleChangeRole = (userId: string, userName: string, currentRole: string, newRole: string) => {
+    if (currentRole === newRole) return;
+    setConfirmRoleChange({ userId, userName, currentRole, newRole });
+  };
+
+  const executeRoleChange = async () => {
+    if (!confirmRoleChange) return;
+    const { userId, newRole } = confirmRoleChange;
     setChangingRole(userId);
+    setConfirmRoleChange(null);
     try {
       await apiClient.put(`/users/${userId}/role`, { role: newRole });
       toast.success(`User role changed to ${newRole}`);
       fetchUsers();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { detail?: string } } };
-      toast.error(error?.response?.data?.detail || 'Failed to change role');
+      toast.error(error?.response?.data?.detail || t('common.error'));
     } finally {
       setChangingRole(null);
     }
@@ -82,7 +96,7 @@ const AdminPage: React.FC = () => {
       fetchUsers();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { detail?: string } } };
-      toast.error(error?.response?.data?.detail || 'Failed to update user');
+      toast.error(error?.response?.data?.detail || t('common.error'));
     }
   };
 
@@ -93,7 +107,7 @@ const AdminPage: React.FC = () => {
       fetchUsers();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { detail?: string } } };
-      toast.error(error?.response?.data?.detail || 'Failed to verify user');
+      toast.error(error?.response?.data?.detail || t('common.error'));
     }
   };
 
@@ -245,7 +259,7 @@ const AdminPage: React.FC = () => {
                     <td className="px-6 py-4">
                       <select
                         value={u.role}
-                        onChange={(e) => handleChangeRole(u.id, e.target.value)}
+                        onChange={(e) => handleChangeRole(u.id, u.full_name || u.username, u.role, e.target.value)}
                         disabled={changingRole === u.id}
                         className={`text-xs font-medium rounded-lg px-2.5 py-1.5 border-0 cursor-pointer transition-colors ${
                           u.role === 'admin'
@@ -327,6 +341,74 @@ const AdminPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Role Change Confirmation Modal */}
+      {confirmRoleChange && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setConfirmRoleChange(null)} />
+          <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full p-6 animate-scale-in">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Confirm Role Change</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">This action affects user permissions</p>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 mb-6 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500 dark:text-gray-400">User</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{confirmRoleChange.userName}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500 dark:text-gray-400">Current Role</span>
+                <span className="text-sm font-medium capitalize px-2.5 py-0.5 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                  {confirmRoleChange.currentRole}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500 dark:text-gray-400">New Role</span>
+                <span className="text-sm font-medium capitalize px-2.5 py-0.5 rounded-lg bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                  {confirmRoleChange.newRole}
+                </span>
+              </div>
+              {confirmRoleChange.newRole === 'admin' && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                  Granting admin access gives full system control including user management, event management, and all other permissions.
+                </p>
+              )}
+              {confirmRoleChange.newRole === 'attendee' && confirmRoleChange.currentRole !== 'attendee' && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                  Demoting to attendee will remove all organizer privileges (create events, analytics, QR payment confirmation).
+                </p>
+              )}
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setConfirmRoleChange(null)}
+                className="btn-secondary btn-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={executeRoleChange}
+                disabled={changingRole === confirmRoleChange.userId}
+                className="btn-primary btn-sm"
+              >
+                {changingRole === confirmRoleChange.userId ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <AlertTriangle className="w-4 h-4" />
+                )}
+                {changingRole === confirmRoleChange.userId ? 'Changing...' : 'Confirm Change'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
