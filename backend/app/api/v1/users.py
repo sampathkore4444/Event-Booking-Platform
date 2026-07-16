@@ -6,7 +6,7 @@ from app.database import get_db
 from app.core.deps import get_current_user, require_admin
 from app.core.exceptions import ForbiddenException, NotFoundException
 from app.crud.user import crud_user
-from app.schemas.user import UserResponse, UserUpdate
+from app.schemas.user import UserResponse, UserUpdate, UserRoleUpdate
 from app.models.user import User, UserRole
 
 router = APIRouter()
@@ -123,4 +123,23 @@ async def verify_user(
 ) -> Any:
     """Verify user email (admin only)."""
     user = crud_user.verify(db, user_id=user_id)
+    return user
+
+
+@router.put("/users/{user_id}/role", response_model=UserResponse)
+async def change_user_role(
+    user_id: str,
+    *,
+    db: Session = Depends(get_db),
+    obj_in: UserRoleUpdate,
+    current_user: User = Depends(require_admin),
+) -> Any:
+    """Change a user's role (admin only).
+    
+    Available roles: attendee, organizer, admin
+    """
+    if current_user.id == user_id:
+        from app.core.exceptions import ForbiddenException
+        raise ForbiddenException("Cannot change your own role")
+    user = crud_user.change_role(db, user_id=user_id, new_role=obj_in.role)
     return user

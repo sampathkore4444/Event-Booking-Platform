@@ -120,5 +120,16 @@ class CRUDUser:
         db.refresh(db_obj)
         return db_obj
 
+    def change_role(self, db: Session, *, user_id: str, new_role: UserRole) -> User:
+        """Change a user's role (admin only)."""
+        db_obj = self.get(db, user_id)
+        if not db_obj:
+            raise NotFoundException("User", user_id)
+        db_obj.role = new_role
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
+
 
 crud_user = CRUDUser()

@@ -12,6 +12,7 @@ import {
   Plus,
   ChevronDown,
   BarChart3,
+  Shield,
 } from 'lucide-react';
 import ThemeSwitcher from './ThemeSwitcher';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -139,6 +140,15 @@ const Navbar: React.FC = () => {
                         <User className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                         {t('settings.title')}
                       </Link>
+                      {user?.role === 'admin' && (
+                        <Link
+                          to="/admin"
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        >
+                          <Shield className="w-4 h-4 text-purple-500" />
+                          Admin Panel
+                        </Link>
+                      )}
                       <div className="border-t border-gray-100 dark:border-gray-800 mt-1 pt-1 px-4 py-2">
                         <ThemeSwitcher />
                       </div>

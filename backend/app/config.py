@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     APP_VERSION: str = Field(default="1.0.0", alias="APP_VERSION")
     APP_ENV: str = Field(default="development", alias="APP_ENV")
     DEBUG: bool = Field(default=True, alias="DEBUG")
+    # Set to False in production:
+    #   APP_ENV=production DEBUG=false
 
     # Database
     DATABASE_URL: str = Field(
@@ -17,6 +19,8 @@ class Settings(BaseSettings):
     )
 
     # Security
+    # IMPORTANT: Generate a strong random key for production:
+    #   python -c "import secrets; print(secrets.token_urlsafe(64))"
     SECRET_KEY: str = Field(default="super-secret-key-change-me", alias="SECRET_KEY")
     ALGORITHM: str = Field(default="HS256", alias="ALGORITHM")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30, alias="ACCESS_TOKEN_EXPIRE_MINUTES")

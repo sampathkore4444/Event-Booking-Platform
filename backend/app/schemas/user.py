@@ -30,6 +30,10 @@ class UserLogin(BaseModel):
     password: str
 
 
+class UserRoleUpdate(BaseModel):
+    role: UserRole = Field(...)
+
+
 class UserResponse(UserBase):
     id: str
     role: UserRole
