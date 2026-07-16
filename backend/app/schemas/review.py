@@ -39,3 +39,5 @@ class ReviewListResponse(BaseModel):
 
 
 from app.schemas.user import UserResponse  # noqa: E402, F811
+
+ReviewResponse.model_rebuild()

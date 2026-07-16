@@ -10,6 +10,7 @@ interface SkeletonProps {
   height?: string | number;
   className?: string;
   count?: number;
+  style?: React.CSSProperties;
 }
 
 const Skeleton: React.FC<SkeletonProps> = ({
