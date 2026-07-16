@@ -52,9 +52,10 @@ const CreateEventPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
+      const slug = formData.slug || formData.title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').slice(0, 255);
       const eventData: EventCreate = {
         title: formData.title,
-        slug: formData.slug,
+        slug,
         description: formData.description,
         short_description: formData.short_description || undefined,
         venue: formData.venue,
@@ -79,8 +80,15 @@ const CreateEventPage: React.FC = () => {
       toast.success(t('toast.created'));
       navigate(`/events/${event.slug}`);
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { detail?: string } } };
-      toast.error(err?.response?.data?.detail || t('toast.createFailed'));
+      const err = error as { response?: { data?: { detail?: string | Array<{ msg: string; loc: string[] }> } } };
+      const detail = err?.response?.data?.detail;
+      let message = t('toast.createFailed');
+      if (typeof detail === 'string') {
+        message = detail;
+      } else if (Array.isArray(detail)) {
+        message = detail.map((d) => `${d.loc[d.loc.length - 1]}: ${d.msg}`).join(', ');
+      }
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -117,6 +125,7 @@ const CreateEventPage: React.FC = () => {
               <input
                 type="text"
                 required
+                minLength={3}
                 value={formData.title}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 className="input"
@@ -137,6 +146,7 @@ const CreateEventPage: React.FC = () => {
               <label className="label">{t('create.fullDesc')}</label>
               <textarea
                 required
+                minLength={10}
                 value={formData.description}
                 onChange={(e) => handleChange('description', e.target.value)}
                 className="input h-32 resize-none"
@@ -160,6 +170,8 @@ const CreateEventPage: React.FC = () => {
               <label className="label">{t('create.slug')}</label>
               <input
                 type="text"
+                required
+                minLength={3}
                 value={formData.slug}
                 onChange={(e) => handleChange('slug', e.target.value)}
                 className="input"
@@ -222,14 +234,15 @@ const CreateEventPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="label">{t('create.venue')}</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.venue}
-                  onChange={(e) => handleChange('venue', e.target.value)}
-                  className="input"
-                  placeholder={t('create.venuePlaceholder')}
-                />
+              <input
+                type="text"
+                required
+                minLength={2}
+                value={formData.venue}
+                onChange={(e) => handleChange('venue', e.target.value)}
+                className="input"
+                placeholder={t('create.venuePlaceholder')}
+              />
               </div>
               <div>
                 <label className="label">{t('create.address')}</label>
@@ -243,25 +256,27 @@ const CreateEventPage: React.FC = () => {
               </div>
               <div>
                 <label className="label">{t('create.city')}</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.city}
-                  onChange={(e) => handleChange('city', e.target.value)}
-                  className="input"
-                  placeholder={t('create.cityPlaceholder')}
-                />
+              <input
+                type="text"
+                required
+                minLength={2}
+                value={formData.city}
+                onChange={(e) => handleChange('city', e.target.value)}
+                className="input"
+                placeholder={t('create.cityPlaceholder')}
+              />
               </div>
               <div>
                 <label className="label">{t('create.country')}</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.country}
-                  onChange={(e) => handleChange('country', e.target.value)}
-                  className="input"
-                  placeholder={t('create.countryPlaceholder')}
-                />
+              <input
+                type="text"
+                required
+                minLength={2}
+                value={formData.country}
+                onChange={(e) => handleChange('country', e.target.value)}
+                className="input"
+                placeholder={t('create.countryPlaceholder')}
+              />
               </div>
               {formData.is_virtual && (
                 <div className="md:col-span-2">
