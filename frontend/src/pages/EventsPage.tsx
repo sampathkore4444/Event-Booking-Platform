@@ -3,10 +3,12 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Calendar, MapPin, Search, Filter, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { eventService } from '../services/event.service';
 import { categoryService } from '../services/category.service';
+import { useTranslation } from '../hooks/useTranslation';
 import type { Event, Category } from '../types';
 import { format } from 'date-fns';
 
 const EventsPage: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [events, setEvents] = useState<Event[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -75,13 +77,13 @@ const EventsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
         <div>
-          <h1 className="section-title">Browse Events</h1>
+          <h1 className="section-title">{t('events.title')}</h1>
           <p className="section-subtitle">
-            Discover events that match your interests
+            {t('events.subtitle')}
           </p>
         </div>
         <Link to="/events/create" className="btn-primary btn-sm self-start">
-          Create Event
+          {t('event.create')}
         </Link>
       </div>
 
@@ -93,7 +95,7 @@ const EventsPage: React.FC = () => {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search events..."
+              placeholder={t('events.search')}
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               className="input pl-12"
@@ -106,7 +108,7 @@ const EventsPage: React.FC = () => {
             onChange={(e) => { setSelectedCategory(e.target.value); setPage(1); }}
             className="input lg:w-48"
           >
-            <option value="">All Categories</option>
+            <option value="">{t('events.allCategories')}</option>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
@@ -141,7 +143,7 @@ const EventsPage: React.FC = () => {
                 onChange={(e) => { setIsFree(e.target.checked); setPage(1); }}
                 className="w-4 h-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
               />
-              <span className="text-sm text-gray-600 dark:text-gray-300">Free Events</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">{t('events.freeEvents')}</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -150,7 +152,7 @@ const EventsPage: React.FC = () => {
                 onChange={(e) => { setIsVirtual(e.target.checked); setPage(1); }}
                 className="w-4 h-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
               />
-              <span className="text-sm text-gray-600 dark:text-gray-300">Virtual Events</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">{t('events.virtualEvents')}</span>
             </label>
             {hasFilters && (
               <button
@@ -158,7 +160,7 @@ const EventsPage: React.FC = () => {
                 className="text-sm text-red-500 hover:text-red-600 flex items-center gap-1 ml-auto"
               >
                 <X className="w-3.5 h-3.5" />
-                Clear all filters
+                {t('events.clearFilters')}
               </button>
             )}
           </div>
@@ -202,7 +204,7 @@ const EventsPage: React.FC = () => {
       )}
 
       {/* Results Count */}          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-        {isLoading ? 'Searching...' : `Showing ${events.length} of ${total} events`}
+        {isLoading ? t('common.loading') : `${t('events.showing')} ${events.length} ${t('events.of')} ${total} events`}
       </p>
 
       {/* Events Grid */}
@@ -223,15 +225,15 @@ const EventsPage: React.FC = () => {
       ) : events.length === 0 ? (
         <div className="text-center py-20">
           <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No events found</h3>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">Try adjusting your search or filters</p>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('events.noEvents')}</h3>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">{t('events.adjustSearch')}</p>
           {hasFilters ? (
             <button onClick={clearFilters} className="btn-primary">
-              Clear Filters
+              {t('events.clearFilters')}
             </button>
           ) : (
             <Link to="/events/create" className="btn-primary">
-              Create First Event
+              {t('events.createFirst')}
             </Link>
           )}
         </div>

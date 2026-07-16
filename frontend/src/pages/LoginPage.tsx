@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Calendar, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 import toast from 'react-hot-toast';
 
 const LoginPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
@@ -20,11 +22,11 @@ const LoginPage: React.FC = () => {
 
     try {
       await login(formData);
-      toast.success('Welcome back!');
+      toast.success(t('toast.welcomeBack'));
       navigate('/dashboard');
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } } };
-      toast.error(err?.response?.data?.detail || 'Login failed');
+      toast.error(err?.response?.data?.detail || t('toast.loginFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -38,7 +40,7 @@ const LoginPage: React.FC = () => {
           <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-4">
             <Calendar className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-display font-bold text-gray-900 dark:text-white">Welcome Back</h1>
+          <h1 className="text-2xl font-display font-bold text-gray-900 dark:text-white">{t('auth.login')}</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-2">Sign in to your account</p>
         </div>
 
@@ -46,7 +48,7 @@ const LoginPage: React.FC = () => {
         <div className="card p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="label">Email</label>
+              <label className="label">{t('auth.email')}</label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -61,7 +63,7 @@ const LoginPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="label">Password</label>
+              <label className="label">{t('auth.password')}</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -90,11 +92,11 @@ const LoginPage: React.FC = () => {
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Signing in...
+                  {t('common.loading')}
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-2">
-                  Sign In
+                  {t('auth.login')}
                   <ArrowRight className="w-4 h-4" />
                 </span>
               )}
@@ -104,9 +106,9 @@ const LoginPage: React.FC = () => {
 
         {/* Register Link */}
         <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-          Don't have an account?{' '}
+          {t('auth.noAccount')}{' '}
           <Link to="/register" className="text-brand-600 hover:text-brand-700 font-semibold">
-            Create one
+            {t('auth.register')}
           </Link>
         </p>
 

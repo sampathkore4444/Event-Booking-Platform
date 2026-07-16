@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Clock, ArrowRight, Search, TrendingUp, Sparkles, Shield, Users } from 'lucide-react';
 import { eventService } from '../services/event.service';
 import { categoryService } from '../services/category.service';
+import { useTranslation } from '../hooks/useTranslation';
 import type { Event, Category } from '../types';
 import { format } from 'date-fns';
 
@@ -17,6 +18,7 @@ const StatCard: React.FC<{ icon: React.ReactNode; value: string; label: string }
 );
 
 const EventCard: React.FC<{ event: Event }> = ({ event }) => {
+  const { t } = useTranslation();
   const startDate = new Date(event.start_date);
   const isSoldOut = event.is_full;
   const isFree = event.is_free;
@@ -36,16 +38,16 @@ const EventCard: React.FC<{ event: Event }> = ({ event }) => {
         <div className="absolute top-4 left-4 flex gap-2">
           {event.is_featured && (
             <span className="badge bg-accent-500 text-white">
-              <Sparkles className="w-3 h-3 mr-1" /> Featured
+              <Sparkles className="w-3 h-3 mr-1" /> {t('events.featured')}
             </span>
           )}
           {isFree && (
-            <span className="badge bg-green-500 text-white">Free</span>
+            <span className="badge bg-green-500 text-white">{t('event.free')}</span>
           )}
         </div>
         {isSoldOut && (
           <div className="absolute top-4 right-4">
-            <span className="badge bg-red-500 text-white">Sold Out</span>
+            <span className="badge bg-red-500 text-white">{t('event.soldOut')}</span>
           </div>
         )}
         {/* Date badge */}
@@ -71,16 +73,16 @@ const EventCard: React.FC<{ event: Event }> = ({ event }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-sm">
             {isFree ? (
-              <span className="font-semibold text-green-600">Free</span>
+              <span className="font-semibold text-green-600">{t('event.free')}</span>
             ) : (
               <>
                 <span className="font-semibold text-gray-900 dark:text-white">${event.price.toFixed(2)}</span>
-                <span className="text-gray-400 dark:text-gray-500">/ ticket</span>
+                <span className="text-gray-400 dark:text-gray-500">{t('event.perTicketShort')}</span>
               </>
             )}
           </div>
           <span className={`text-xs font-medium ${event.available_tickets > 10 ? 'text-gray-500 dark:text-gray-400' : 'text-red-500'}`}>
-            {event.available_tickets} left
+            {event.available_tickets} {t('events.left')}
           </span>
         </div>
       </div>
@@ -105,6 +107,7 @@ const CategoryCard: React.FC<{ category: Category }> = ({ category }) => (
 );
 
 const HomePage: React.FC = () => {
+  const { t } = useTranslation();
   const [featuredEvents, setFeaturedEvents] = useState<Event[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -146,19 +149,15 @@ const HomePage: React.FC = () => {
           <div className="max-w-3xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-8">
               <Sparkles className="w-4 h-4 text-accent-400" />
-              <span className="text-sm text-white/90">Discover amazing events near you</span>
+              <span className="text-sm text-white/90">{t('hero.subtitle')}</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-white leading-tight mb-6">
-              Your Gateway to{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-400 to-accent-300">
-                Unforgettable
-              </span>{' '}
-              Experiences
+              {t('hero.title')}
             </h1>
 
             <p className="text-lg text-white/80 max-w-2xl mx-auto mb-10 text-balance">
-              From intimate workshops to grand conferences — discover, book, and experience events that matter to you.
+              {t('hero.subtitle')}
             </p>
 
             {/* Search Bar */}
@@ -169,7 +168,7 @@ const HomePage: React.FC = () => {
                   <input
                     id="hero-search"
                     type="text"
-                    placeholder="Search events by name, city, or category..."
+                    placeholder={t('hero.search')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="flex-1 outline-none text-gray-900 placeholder-gray-400 bg-transparent"
@@ -184,7 +183,7 @@ const HomePage: React.FC = () => {
                   to={searchQuery ? `/events?search=${encodeURIComponent(searchQuery)}` : '/events'}
                   className="btn-primary btn-sm"
                 >
-                  Search
+                  {t('common.search')}
                 </Link>
               </div>
             </div>
@@ -193,17 +192,17 @@ const HomePage: React.FC = () => {
             <div className="flex items-center justify-center gap-8 mt-12 text-white/70">
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">500+</div>
-                <div className="text-sm">Events Hosted</div>
+                <div className="text-sm">{t('landing.statsEvents')}</div>
               </div>
               <div className="w-px h-10 bg-white/20" />
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">10K+</div>
-                <div className="text-sm">Happy Attendees</div>
+                <div className="text-sm">{t('landing.statsAttendees')}</div>
               </div>
               <div className="w-px h-10 bg-white/20" />
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">50+</div>
-                <div className="text-sm">Cities Covered</div>
+                <div className="text-sm">{t('landing.statsSecure')}</div>
               </div>
             </div>
           </div>
@@ -214,9 +213,9 @@ const HomePage: React.FC = () => {
       <section className="py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="section-title">Browse by Category</h2>
+            <h2 className="section-title">{t('landing.categoryTitle')}</h2>
             <p className="section-subtitle mx-auto">
-              Find exactly what you're looking for across our curated categories
+              {t('landing.categoryDesc')}
             </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
@@ -242,18 +241,18 @@ const HomePage: React.FC = () => {
               <div>
                 <div className="inline-flex items-center gap-2 text-brand-600 font-medium text-sm mb-3">
                   <Sparkles className="w-4 h-4" />
-                  Featured Events
+                  {t('landing.featuredLabel')}
                 </div>
-                <h2 className="section-title">Handpicked for You</h2>
+                <h2 className="section-title">{t('landing.featuredTitle')}</h2>
                 <p className="section-subtitle">
-                  Curated selection of the most exciting upcoming events
+                  {t('landing.featuredDesc')}
                 </p>
               </div>
               <Link
                 to="/events?featured=true"
                 className="hidden sm:flex items-center gap-2 text-brand-600 hover:text-brand-700 font-medium text-sm transition-colors"
               >
-                View All <ArrowRight className="w-4 h-4" />
+                {t('landing.viewAll')} <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
 
@@ -273,22 +272,22 @@ const HomePage: React.FC = () => {
             <StatCard
               icon={<Calendar className="w-6 h-6" />}
               value="500+"
-              label="Events Hosted"
+              label={t('landing.statsEvents')}
             />
             <StatCard
               icon={<Users className="w-6 h-6" />}
               value="10K+"
-              label="Happy Attendees"
+              label={t('landing.statsAttendees')}
             />
             <StatCard
               icon={<TrendingUp className="w-6 h-6" />}
               value="95%"
-              label="Satisfaction Rate"
+              label={t('landing.statsSatisfaction')}
             />
             <StatCard
               icon={<Shield className="w-6 h-6" />}
               value="100%"
-              label="Secure Booking"
+              label={t('landing.statsSecure')}
             />
           </div>
         </div>
@@ -302,18 +301,18 @@ const HomePage: React.FC = () => {
               <div>
                 <div className="inline-flex items-center gap-2 text-brand-600 font-medium text-sm mb-3">
                   <Clock className="w-4 h-4" />
-                  Coming Up
+                  {t('landing.upcomingLabel')}
                 </div>
-                <h2 className="section-title">Upcoming Events</h2>
+                <h2 className="section-title">{t('landing.upcomingTitle')}</h2>
                 <p className="section-subtitle">
-                  Don't miss out on these amazing experiences
+                  {t('landing.upcomingDesc')}
                 </p>
               </div>
               <Link
                 to="/events"
                 className="hidden sm:flex items-center gap-2 btn-primary btn-sm"
               >
-                View All Events <ArrowRight className="w-4 h-4" />
+                {t('landing.viewAllEvents')} <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
 
@@ -325,7 +324,7 @@ const HomePage: React.FC = () => {
 
             <div className="text-center mt-10 sm:hidden">
               <Link to="/events" className="btn-primary">
-                View All Events <ArrowRight className="w-4 h-4" />
+                {t('landing.viewAllEvents')} <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
@@ -343,18 +342,17 @@ const HomePage: React.FC = () => {
 
             <div className="relative">
               <h2 className="text-3xl lg:text-4xl font-display font-bold text-white mb-4">
-                Ready to Create Your Own Event?
+                {t('landing.ctaTitle')}
               </h2>
               <p className="text-lg text-white/80 max-w-2xl mx-auto mb-8">
-                Join thousands of organizers who trust EventHub to manage their events.
-                Start creating memorable experiences today.
+                {t('landing.ctaDesc')}
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link to="/register" className="btn bg-white text-brand-700 hover:bg-gray-100 shadow-xl px-8 py-4 text-base">
-                  Get Started Free
+                  {t('nav.register')}
                 </Link>
                 <Link to="/events" className="btn border-2 border-white/30 text-white hover:bg-white/10 px-8 py-4 text-base">
-                  Browse Events
+                  {t('nav.events')}
                 </Link>
               </div>
             </div>

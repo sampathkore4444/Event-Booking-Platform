@@ -8,6 +8,7 @@ import {
 import { bookingService } from '../services/booking.service';
 import { eventService } from '../services/event.service';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 import type { Booking, Event, BookingStatus } from '../types';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -22,6 +23,7 @@ const statusColors: Record<string, string> = {
 };
 
 const DashboardPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, isOrganizer, isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState<'bookings' | 'my-events' | 'qr-payments'>('bookings');
@@ -38,14 +40,11 @@ const DashboardPage: React.FC = () => {
     const payment = params.get('payment');
     if (payment === 'success') {
       const ref = params.get('booking');
-      toast.success(
-        ref ? `Payment successful! Booking ${ref} confirmed.` : 'Payment successful! Booking confirmed.',
-        { duration: 6000 }
-      );
+      toast.success(t('toast.paymentSuccess'), { duration: 6000 });
       // Clean up URL params
       window.history.replaceState({}, '', '/dashboard');
     } else if (payment === 'cancelled') {
-      toast.error('Payment was cancelled. You can try again.', { duration: 5000 });
+      toast.error(t('toast.paymentCancelled'), { duration: 5000 });
       window.history.replaceState({}, '', '/dashboard');
     }
   }, []);
@@ -78,11 +77,11 @@ const DashboardPage: React.FC = () => {
   const handleCancelBooking = async (bookingId: string) => {
     try {
       await bookingService.cancelBooking(bookingId);
-      toast.success('Booking cancelled');
+      toast.success(t('toast.bookingCancelled'));
       setBookings(prev => prev.filter(b => b.id !== bookingId));
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } } };
-      toast.error(err?.response?.data?.detail || 'Failed to cancel booking');
+      toast.error(err?.response?.data?.detail || t('toast.cancelFailed'));
     }
   };
 
@@ -90,11 +89,11 @@ const DashboardPage: React.FC = () => {
     setIsConfirmingId(bookingId);
     try {
       await bookingService.confirmQRPayment(bookingId);
-      toast.success('QR payment confirmed! Booking is now active.');
+      toast.success(t('toast.qrConfirmed'));
       setQrBookings(prev => prev.filter(b => b.id !== bookingId));
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } } };
-      toast.error(err?.response?.data?.detail || 'Failed to confirm payment');
+      toast.error(err?.response?.data?.detail || t('toast.qrConfirmFailed'));
     } finally {
       setIsConfirmingId(null);
     }
@@ -104,11 +103,11 @@ const DashboardPage: React.FC = () => {
     setIsConfirmingId(bookingId);
     try {
       await bookingService.rejectQRPayment(bookingId);
-      toast.success('QR payment rejected. Tickets returned to pool.');
+      toast.success(t('toast.qrRejected'));
       setQrBookings(prev => prev.filter(b => b.id !== bookingId));
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } } };
-      toast.error(err?.response?.data?.detail || 'Failed to reject payment');
+      toast.error(err?.response?.data?.detail || t('toast.qrRejectFailed'));
     } finally {
       setIsConfirmingId(null);
     }
@@ -119,14 +118,14 @@ const DashboardPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="section-title">Dashboard</h1>
+          <h1 className="section-title">{t('dashboard.title')}</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Welcome back, {user?.full_name?.split(' ')[0]}
+            {t('dashboard.welcome')}, {user?.full_name?.split(' ')[0]}
           </p>
         </div>
         <Link to="/events/create" className="btn-primary btn-sm">
           <Plus className="w-4 h-4" />
-          Create Event
+          {t('event.create')}
         </Link>
       </div>
 
@@ -135,26 +134,26 @@ const DashboardPage: React.FC = () => {
         <div className="card p-5">
           <Ticket className="w-8 h-8 text-brand-500 mb-3" />
           <div className="text-2xl font-bold text-gray-900 dark:text-white">{bookings.length}</div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">Total Bookings</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.stats.bookings')}</div>
         </div>
         <div className="card p-5">
           <CheckCircle className="w-8 h-8 text-green-500 mb-3" />
           <div className="text-2xl font-bold text-gray-900 dark:text-white">
             {bookings.filter(b => b.status === 'confirmed').length}
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">Confirmed</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.stats.confirmed')}</div>
         </div>
         <div className="card p-5">
           <Clock className="w-8 h-8 text-yellow-500 mb-3" />
           <div className="text-2xl font-bold text-gray-900 dark:text-white">
             {bookings.filter(b => b.status === 'pending').length}
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">Pending</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.stats.pending')}</div>
         </div>
         <div className="card p-5">
           <Calendar className="w-8 h-8 text-purple-500 mb-3" />
           <div className="text-2xl font-bold text-gray-900 dark:text-white">{myEvents.length}</div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">My Events</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.stats.events')}</div>
         </div>
       </div>
 
@@ -169,7 +168,7 @@ const DashboardPage: React.FC = () => {
           }`}
         >
           <Ticket className="w-4 h-4 inline mr-2" />
-          My Bookings
+          {t('dashboard.tabs.bookings')}
         </button>
         {isOrganizer && (
           <>
@@ -182,7 +181,7 @@ const DashboardPage: React.FC = () => {
               }`}
             >
               <Calendar className="w-4 h-4 inline mr-2" />
-              My Events
+              {t('dashboard.tabs.myEvents')}
             </button>
             <button
               onClick={() => setActiveTab('qr-payments')}
@@ -193,7 +192,7 @@ const DashboardPage: React.FC = () => {
               }`}
             >
               <QrCode className="w-4 h-4 inline mr-2" />
-              QR Payments
+              {t('booking.qrPayments')}
               {qrBookings.length > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                   {qrBookings.length}
@@ -219,7 +218,7 @@ const DashboardPage: React.FC = () => {
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
-                {status || 'All'}
+                {status || t('dashboard.all')}
               </button>
             ))}
           </div>
@@ -241,10 +240,10 @@ const DashboardPage: React.FC = () => {
           ) : bookings.length === 0 ? (
             <div className="text-center py-16">
               <Ticket className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No bookings yet</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('dashboard.noBookings')}</h3>
               <p className="text-gray-500 dark:text-gray-400 mb-6">Browse events and book your first experience</p>
               <Link to="/events" className="btn-primary">
-                Browse Events
+                {t('dashboard.browseEvents')}
               </Link>
             </div>
           ) : (
@@ -469,12 +468,12 @@ const DashboardPage: React.FC = () => {
                           onClick={async () => {
                             try {
                               await eventService.publishEvent(event.id);
-                              toast.success('Event published!');
+                              toast.success(t('toast.eventPublished'));
                               const events = await eventService.getMyEvents();
                               setMyEvents(events);
                             } catch (error: unknown) {
                               const err = error as { response?: { data?: { detail?: string } } };
-                              toast.error(err?.response?.data?.detail || 'Failed to publish');
+                              toast.error(err?.response?.data?.detail || t('toast.publishFailed'));
                             }
                           }}
                           className="btn-primary btn-sm"

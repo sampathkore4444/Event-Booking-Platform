@@ -5,6 +5,7 @@ import {
   CheckCircle, Download, Copy,
 } from 'lucide-react';
 import { bookingService } from '../services/booking.service';
+import { useTranslation } from '../hooks/useTranslation';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 
@@ -22,6 +23,7 @@ interface TicketInfo {
 }
 
 const MyTicketPage: React.FC = () => {
+  const { t } = useTranslation();
   const { bookingId } = useParams<{ bookingId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -37,7 +39,7 @@ const MyTicketPage: React.FC = () => {
         setTicket(response);
       } catch (error) {
         console.error('Failed to load ticket:', error);
-        toast.error('Could not load your ticket');
+        toast.error(t('toast.ticketError'));
         navigate('/dashboard');
       } finally {
         setIsLoading(false);
@@ -265,7 +267,7 @@ const MyTicketPage: React.FC = () => {
     link.download = `ticket-${ticket?.booking_reference || 'event'}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
-    toast.success('Ticket downloaded!');
+    toast.success(t('toast.ticketDownloaded'));
   };
 
   if (isLoading) {
@@ -279,8 +281,8 @@ const MyTicketPage: React.FC = () => {
   if (!ticket) {
     return (
       <div className="text-center py-20">
-        <p className="text-gray-500">Ticket not available</p>
-        <Link to="/dashboard" className="btn-primary mt-4 inline-block">Go to Dashboard</Link>
+        <p className="text-gray-500">{t('ticket.notAvailable')}</p>
+        <Link to="/dashboard" className="btn-primary mt-4 inline-block">{t('ticket.goToDashboard')}</Link>
       </div>
     );
   }
@@ -291,7 +293,7 @@ const MyTicketPage: React.FC = () => {
         {/* Back button */}
         <Link to="/dashboard" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors">
           <ArrowLeft className="w-5 h-5" />
-          Back to Dashboard
+          {t('ticket.back')}
         </Link>
 
         {/* Ticket Card */}
@@ -383,7 +385,7 @@ const MyTicketPage: React.FC = () => {
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(ticket.booking_reference);
-                  toast.success('Reference copied!');
+                  toast.success(t('toast.refCopied'));
                 }}
                 className="btn-secondary flex-1 btn-sm"
               >
@@ -394,12 +396,10 @@ const MyTicketPage: React.FC = () => {
 
             {/* Instructions */}
             <div className="mt-6 p-4 bg-gray-50 rounded-2xl">
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">📋 Instructions</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">{t('ticket.instructions')}</h3>
               <ul className="text-xs text-gray-600 space-y-1.5">
-                <li>• Present this QR code at the event entrance</li>
-                <li>• The organizer will scan your code to verify your ticket</li>
-                <li>• Arrive at least 15 minutes before the event starts</li>
-                <li>• Keep this ticket handy throughout the event</li>
+                <li>{t('ticket.arriveEarly')}</li>
+                <li>{t('ticket.keepHandy')}</li>
               </ul>
             </div>
           </div>

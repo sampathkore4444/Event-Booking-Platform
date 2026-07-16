@@ -9,6 +9,7 @@ import { eventService } from '../services/event.service';
 import { bookingService } from '../services/booking.service';
 import { paymentService } from '../services/payment.service';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 import type { Event } from '../types';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -18,6 +19,7 @@ import ReviewSection from '../components/ReviewSection';
 const EventDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { isAuthenticated, user } = useAuth();
   const [event, setEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,7 +70,7 @@ const EventDetailPage: React.FC = () => {
 
       // Step 2: If the event is free, done — redirect to dashboard
       if (event.is_free) {
-        toast.success('Free booking confirmed!');
+        toast.success(t('toast.freeBooking'));
         setShowBookingModal(false);
         navigate('/dashboard');
         return;
@@ -94,8 +96,7 @@ const EventDetailPage: React.FC = () => {
 
       // Step 3b: All other countries (India gets UPI, rest get card) — Stripe Checkout
       const checkout = await paymentService.createCheckoutSession(booking.id);
-      const methodLabel = checkout.payment_method === 'stripe_upi' ? 'UPI' : 'Stripe';
-      toast.success(`Redirecting to ${methodLabel} payment...`);
+      toast.success(t('toast.paymentSuccess'));
       setShowBookingModal(false);
 
       setTimeout(() => {
@@ -103,7 +104,7 @@ const EventDetailPage: React.FC = () => {
       }, 800);
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } } };
-      toast.error(err?.response?.data?.detail || 'Booking failed');
+      toast.error(err?.response?.data?.detail || t('toast.bookingFailed'));
     } finally {
       setIsBooking(false);
     }
@@ -153,14 +154,14 @@ const EventDetailPage: React.FC = () => {
           className="absolute top-6 left-6 flex items-center gap-2 text-white/80 hover:text-white bg-black/20 backdrop-blur-sm rounded-xl px-4 py-2 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Events
+          {t('common.back')}
         </Link>
 
         {/* Event Status Badge */}
         <div className="absolute top-6 right-6 flex gap-2">
-          {isFree && <span className="badge bg-green-500 text-white">Free Event</span>}
-          {event.is_featured && <span className="badge bg-accent-500 text-white">Featured</span>}
-          {isSoldOut && <span className="badge bg-red-500 text-white">Sold Out</span>}
+          {isFree && <span className="badge bg-green-500 text-white">{t('event.freeEvent')}</span>}
+          {event.is_featured && <span className="badge bg-accent-500 text-white">{t('events.featured')}</span>}
+          {isSoldOut && <span className="badge bg-red-500 text-white">{t('event.soldOut')}</span>}
         </div>
       </div>
 
@@ -205,7 +206,7 @@ const EventDetailPage: React.FC = () => {
 
               {/* Description */}
               <div className="mb-8">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">About This Event</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('event.about')}</h2>
                 <div className="prose prose-gray max-w-none">
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
                     {event.description}
@@ -218,7 +219,7 @@ const EventDetailPage: React.FC = () => {
                 <div className="flex items-start gap-3">
                   <MapPin className="w-5 h-5 text-brand-500 mt-0.5" />
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-900">Location</h4>
+                    <h4 className="text-sm font-semibold text-gray-900">{t('event.location')}</h4>
                     <p className="text-sm text-gray-600">
                       {event.venue}
                       {event.address && <><br />{event.address}</>}
@@ -229,27 +230,27 @@ const EventDetailPage: React.FC = () => {
                 <div className="flex items-start gap-3">
                   <Users className="w-5 h-5 text-brand-500 mt-0.5" />
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-900">Capacity</h4>
+                    <h4 className="text-sm font-semibold text-gray-900">{t('event.capacity')}</h4>
                     <p className="text-sm text-gray-600">
-                      {event.available_tickets} / {event.total_capacity} available
+                      {event.available_tickets} / {event.total_capacity} {t('events.left')}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <DollarSign className="w-5 h-5 text-brand-500 mt-0.5" />
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-900">Price</h4>
+                    <h4 className="text-sm font-semibold text-gray-900">{t('event.price')}</h4>
                     <p className="text-sm text-gray-600">
-                      {isFree ? 'Free' : `$${event.price.toFixed(2)} per ticket`}
+                      {isFree ? t('event.free') : `$${event.price.toFixed(2)} ${t('event.perTicket')}`}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Globe className="w-5 h-5 text-brand-500 mt-0.5" />
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-900">Type</h4>
+                    <h4 className="text-sm font-semibold text-gray-900">{t('event.type')}</h4>
                     <p className="text-sm text-gray-600">
-                      {event.is_virtual ? 'Virtual Event' : 'In-Person Event'}
+                      {event.is_virtual ? t('event.virtual') : t('event.inPerson')}
                     </p>
                   </div>
                 </div>
@@ -265,7 +266,7 @@ const EventDetailPage: React.FC = () => {
                 <div className="text-4xl font-bold text-gray-900 dark:text-white">
                   {isFree ? 'Free' : `$${event.price.toFixed(2)}`}
                 </div>
-                {!isFree && <p className="text-sm text-gray-500 mt-1">per ticket</p>}
+                {!isFree && <p className="text-sm text-gray-500 mt-1">{t('event.perTicket')}</p>}
               </div>
 
               {/* Event Status */}
@@ -274,12 +275,12 @@ const EventDetailPage: React.FC = () => {
                   <>
                     <div className="flex items-center gap-2 text-sm text-green-600">
                       <CheckCircle className="w-4 h-4" />
-                      Bookings Open
+                      {t('event.bookingsOpen')}
                     </div>
 
                     {/* Quantity Selector */}
                     <div>
-                      <label className="label">Tickets</label>
+                      <label className="label">{t('event.tickets')}</label>
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -303,18 +304,18 @@ const EventDetailPage: React.FC = () => {
                       className="btn-primary w-full py-4 text-base"
                       disabled={isSoldOut}
                     >
-                      {isOrganizer ? 'Manage Event' : 'Book Now'}
+                      {isOrganizer ? 'Manage Event' : t('event.book')}
                     </button>
 
                     <p className="text-xs text-gray-400 text-center">
-                      {event.available_tickets} tickets remaining
+                      {event.available_tickets} {t('event.tickets')?.toLowerCase()} {t('events.left')?.toLowerCase()}
                     </p>
                   </>
                 ) : (
                   <div className="text-center py-6">
                     <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                     <p className="text-gray-500 font-medium">
-                      {isSoldOut ? 'Sold Out' : 'Bookings Closed'}
+                      {isSoldOut ? t('event.soldOut') : t('event.bookingsClosed')}
                     </p>
                   </div>
                 )}
@@ -338,9 +339,8 @@ const EventDetailPage: React.FC = () => {
                 </div>
                 {event.is_virtual && event.virtual_link && (
                   <div className="flex items-center gap-3 text-sm">
-                    <ExternalLink className="w-4 h-4 text-gray-400" />
-                    <a href={event.virtual_link} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700">
-                      Join Virtually
+                    <ExternalLink className="w-4 h-4 text-gray-400" />                      <a href={event.virtual_link} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700">
+                      {t('event.joinVirtually')}
                     </a>
                   </div>
                 )}
@@ -348,7 +348,7 @@ const EventDetailPage: React.FC = () => {
                   <Users className="w-4 h-4 text-gray-400" />
                   <div>
                     <p className="text-gray-900 font-medium">{event.available_tickets} / {event.total_capacity}</p>
-                    <p className="text-gray-500">tickets available</p>
+                    <p className="text-gray-500">{t('event.ticketsAvailable')}</p>
                   </div>
                 </div>
               </div>
@@ -357,12 +357,12 @@ const EventDetailPage: React.FC = () => {
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(window.location.href);
-                  toast.success('Link copied!');
+                  toast.success(t('toast.linkCopied'));
                 }}
                 className="btn-secondary w-full btn-sm"
               >
                 <Share2 className="w-4 h-4" />
-                Share Event
+                {t('event.share')}
               </button>
             </div>
           </div>
@@ -374,13 +374,13 @@ const EventDetailPage: React.FC = () => {
           <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm" onClick={() => setShowBookingModal(false)} />
           <div className="relative bg-white dark:bg-gray-900 rounded-3xl p-8 max-w-md w-full shadow-2xl animate-scale-in">
             <h3 className="text-2xl font-display font-bold text-gray-900 dark:text-white mb-2">
-              Confirm Booking
+              {t('event.confirm')}
             </h3>
             <p className="text-gray-500 mb-6">{event?.title}</p>
 
             <div className="space-y-4 mb-6">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Tickets</span>
+                <span className="text-gray-500">{t('event.tickets')}</span>
                 <span className="font-medium">{quantity} x {isFree ? 'Free' : `$${event?.price.toFixed(2)}`}</span>
               </div>
               <div className="flex justify-between text-sm">
@@ -388,7 +388,7 @@ const EventDetailPage: React.FC = () => {
                 <span className="font-medium">{format(startDate, 'MMM d, yyyy')}</span>
               </div>
               <div className="border-t border-gray-100 dark:border-gray-800 pt-4 flex justify-between">
-                <span className="font-semibold text-gray-900 dark:text-white">Total</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{t('event.total')}</span>
                 <span className="font-bold text-lg text-gray-900 dark:text-white">
                   {isFree ? 'Free' : `$${(event?.price || 0) * quantity}`}
                 </span>
@@ -419,14 +419,14 @@ const EventDetailPage: React.FC = () => {
                 onClick={() => setShowBookingModal(false)}
                 className="btn-secondary flex-1"
               >
-                Cancel
+                {t('event.cancel')}
               </button>
               <button
                 onClick={handleBooking}
                 disabled={isBooking}
                 className="btn-primary flex-1"
               >
-                {isBooking ? 'Booking...' : 'Confirm Booking'}
+                {isBooking ? t('common.loading') : t('event.confirm')}
               </button>
             </div>
           </div>

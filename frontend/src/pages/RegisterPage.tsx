@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Calendar, Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 import toast from 'react-hot-toast';
 
 const RegisterPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { register } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -22,11 +24,11 @@ const RegisterPage: React.FC = () => {
 
     try {
       await register(formData);
-      toast.success('Account created successfully!');
+      toast.success(t('toast.accountCreated'));
       navigate('/dashboard');
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } } };
-      toast.error(err?.response?.data?.detail || 'Registration failed');
+      toast.error(err?.response?.data?.detail || t('toast.registrationFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -40,7 +42,7 @@ const RegisterPage: React.FC = () => {
           <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-4">
             <Calendar className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-display font-bold text-gray-900 dark:text-white">Create Account</h1>
+          <h1 className="text-2xl font-display font-bold text-gray-900 dark:text-white">{t('auth.register')}</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-2">Join EventHub today</p>
         </div>
 
@@ -49,7 +51,7 @@ const RegisterPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 sm:col-span-1">
-                <label className="label">Full Name</label>
+                <label className="label">{t('auth.name')}</label>
                 <input
                   type="text"
                   required
@@ -60,7 +62,7 @@ const RegisterPage: React.FC = () => {
                 />
               </div>
               <div className="col-span-2 sm:col-span-1">
-                <label className="label">Username</label>
+                <label className="label">{t('auth.username')}</label>
                 <input
                   type="text"
                   required
@@ -73,7 +75,7 @@ const RegisterPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="label">Email</label>
+              <label className="label">{t('auth.email')}</label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -102,7 +104,7 @@ const RegisterPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="label">Password</label>
+              <label className="label">{t('auth.password')}</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -125,11 +127,11 @@ const RegisterPage: React.FC = () => {
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Creating account...
+                  {t('common.loading')}
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-2">
-                  Create Account
+                  {t('auth.register')}
                   <ArrowRight className="w-4 h-4" />
                 </span>
               )}
@@ -139,9 +141,9 @@ const RegisterPage: React.FC = () => {
 
         {/* Login Link */}
         <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-          Already have an account?{' '}
+          {t('auth.hasAccount')}{' '}
           <Link to="/login" className="text-brand-600 hover:text-brand-700 font-semibold">
-            Sign in
+            {t('auth.login')}
           </Link>
         </p>
       </div>

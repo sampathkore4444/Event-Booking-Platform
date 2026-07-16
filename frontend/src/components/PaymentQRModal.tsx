@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Copy, CheckCircle, Smartphone, CreditCard } from 'lucide-react';
+import { useTranslation } from '../hooks/useTranslation';
 import toast from 'react-hot-toast';
 
 interface PaymentQRModalProps {
@@ -23,6 +24,7 @@ const PaymentQRModal: React.FC<PaymentQRModalProps> = ({
   merchantName,
   instructions,
 }) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = React.useState(false);
 
   if (!isOpen) return null;
@@ -30,7 +32,7 @@ const PaymentQRModal: React.FC<PaymentQRModalProps> = ({
   const handleCopyBill = () => {
     navigator.clipboard.writeText(billNumber);
     setCopied(true);
-    toast.success('Bill number copied!');
+    toast.success(t('toast.billCopied'));
     setTimeout(() => setCopied(false), 2000);
   };
 

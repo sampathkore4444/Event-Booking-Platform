@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 import { analyticsService } from '../services/analytics.service';
 import { AnalyticsSkeleton } from '../components/Skeleton';
 import type { AnalyticsOverview } from '../types';
@@ -11,6 +12,7 @@ import {
 import { format } from 'date-fns';
 
 const AnalyticsPage: React.FC = () => {
+  const { t } = useTranslation();
   const { isOrganizer, isAdmin } = useAuth();
   const [overview, setOverview] = useState<AnalyticsOverview | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -81,28 +83,28 @@ const AnalyticsPage: React.FC = () => {
 
   const stats = [
     {
-      label: 'Total Events',
+      label: t('analytics.totalEvents'),
       value: overview.total_events,
       icon: Calendar,
       color: 'text-brand-500',
       bg: 'bg-brand-100',
     },
     {
-      label: 'Total Bookings',
+      label: t('analytics.bookings'),
       value: overview.total_bookings,
       icon: Ticket,
       color: 'text-green-500',
       bg: 'bg-green-100',
     },
     {
-      label: 'Revenue',
+      label: t('analytics.revenue'),
       value: `$${overview.total_revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       icon: DollarSign,
       color: 'text-yellow-500',
       bg: 'bg-yellow-100',
     },
     {
-      label: 'Confirmed',
+      label: t('analytics.confirmed'),
       value: overview.confirmed_bookings,
       icon: TrendingUp,
       color: 'text-purple-500',
@@ -136,9 +138,9 @@ const AnalyticsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="section-title">Analytics Dashboard</h1>
+          <h1 className="section-title">{t('analytics.title')}</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Performance overview for the last {days} days
+            {t('analytics.performance').replace('{days}', days.toString())}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -175,7 +177,7 @@ const AnalyticsPage: React.FC = () => {
         <div className="card p-6 mb-8">
           <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-brand-500" />
-            Sales Over Time
+            {t('analytics.sales')}
           </h2>
           <div className="space-y-3">
             {overview.sales_daily.slice(-14).map((day) => {
@@ -213,15 +215,15 @@ const AnalyticsPage: React.FC = () => {
         <div className="card p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-brand-500" />
-            Top Performing Events
+            {t('analytics.topPerforming')}
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-100">
-                  <th className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider pb-3">Event</th>
-                  <th className="text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider pb-3">Bookings</th>
-                  <th className="text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider pb-3">Revenue</th>
+                  <th className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider pb-3">{t('analytics.eventLabel')}</th>
+                  <th className="text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider pb-3">{t('analytics.bookingsLabel')}</th>
+                  <th className="text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider pb-3">{t('analytics.revenueLabel')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">

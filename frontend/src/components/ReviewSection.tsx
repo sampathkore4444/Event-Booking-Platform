@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 import { reviewService } from '../services/review.service';
 import StarRating from './StarRating';
 import { ReviewSkeleton } from './Skeleton';
@@ -13,6 +14,7 @@ interface ReviewSectionProps {
 }
 
 const ReviewSection: React.FC<ReviewSectionProps> = ({ eventId }) => {
+  const { t } = useTranslation();
   const { isAuthenticated, user } = useAuth();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [stats, setStats] = useState<ReviewStats | null>(null);
@@ -44,7 +46,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ eventId }) => {
 
   const handleSubmit = async () => {
     if (!newComment.trim()) {
-      toast.error('Please write a comment');
+      toast.error(t('toast.writeComment'));
       return;
     }
     setIsSubmitting(true);
@@ -54,14 +56,14 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ eventId }) => {
         rating: newRating,
         comment: newComment.trim(),
       });
-      toast.success('Review submitted!');
+      toast.success(t('toast.reviewSubmitted'));
       setShowForm(false);
       setNewComment('');
       setNewRating(5);
       await fetchReviews();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } } };
-      toast.error(err?.response?.data?.detail || 'Failed to submit review');
+      toast.error(err?.response?.data?.detail || t('toast.reviewFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -69,7 +71,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ eventId }) => {
 
   const handleUpdate = async (reviewId: string) => {
     if (!newComment.trim()) {
-      toast.error('Please write a comment');
+      toast.error(t('toast.writeComment'));
       return;
     }
     setIsSubmitting(true);
@@ -78,14 +80,14 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ eventId }) => {
         rating: newRating,
         comment: newComment.trim(),
       });
-      toast.success('Review updated!');
+      toast.success(t('toast.reviewUpdated'));
       setEditingId(null);
       setNewComment('');
       setNewRating(5);
       await fetchReviews();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } } };
-      toast.error(err?.response?.data?.detail || 'Failed to update review');
+      toast.error(err?.response?.data?.detail || t('toast.reviewUpdateFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -95,11 +97,11 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ eventId }) => {
     if (!window.confirm('Delete this review?')) return;
     try {
       await reviewService.deleteReview(reviewId);
-      toast.success('Review deleted');
+      toast.success(t('toast.reviewDeleted'));
       await fetchReviews();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } } };
-      toast.error(err?.response?.data?.detail || 'Failed to delete review');
+      toast.error(err?.response?.data?.detail || t('toast.reviewDeleteFailed'));
     }
   };
 

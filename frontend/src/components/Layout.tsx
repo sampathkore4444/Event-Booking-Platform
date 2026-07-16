@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 import {
   Calendar,
   Menu,
@@ -16,6 +17,7 @@ import ThemeSwitcher from './ThemeSwitcher';
 import LanguageSwitcher from './LanguageSwitcher';
 
 const Navbar: React.FC = () => {
+  const { t } = useTranslation();
   const { isAuthenticated, user, logout, isOrganizer } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -42,8 +44,8 @@ const Navbar: React.FC = () => {
   };
 
   const navLinks = [
-    { to: '/events', label: 'Events' },
-    ...(isAuthenticated ? [{ to: '/events/create', label: 'Create Event' }] : []),
+    { to: '/events', label: t('nav.events') },
+    ...(isAuthenticated ? [{ to: '/events/create', label: t('nav.create') }] : []),
   ];
 
   return (
@@ -121,21 +123,21 @@ const Navbar: React.FC = () => {
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                       >
                         <LayoutDashboard className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                        Dashboard
+                        {t('dashboard.title')}
                       </Link>
                       <Link
                         to="/analytics"
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                       >
                         <BarChart3 className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                        Analytics
+                        {t('analytics.title')}
                       </Link>
                       <Link
                         to="/profile"
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                       >
                         <User className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                        Profile
+                        {t('settings.title')}
                       </Link>
                       <div className="border-t border-gray-100 dark:border-gray-800 mt-1 pt-1 px-4 py-2">
                         <ThemeSwitcher />
@@ -146,7 +148,7 @@ const Navbar: React.FC = () => {
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors w-full"
                         >
                           <LogOut className="w-4 h-4" />
-                          Sign Out
+                          {t('nav.logout')}
                         </button>
                       </div>
                     </div>
@@ -156,10 +158,10 @@ const Navbar: React.FC = () => {
             ) : (
               <>
                 <Link to="/login" className="btn-ghost btn-sm">
-                  Sign In
+                  {t('nav.login')}
                 </Link>
                 <Link to="/register" className="btn-primary btn-sm">
-                  Get Started
+                  {t('nav.register')}
                 </Link>
               </>
             )}
@@ -213,30 +215,30 @@ const Navbar: React.FC = () => {
                       className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl"
                     >
                       <LayoutDashboard className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                      Dashboard
+                      {t('dashboard.title')}
                     </Link>
                     <Link
                       to="/profile"
                       className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl"
                     >
                       <User className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                      Profile
+                      {t('settings.title')}
                     </Link>
                     <button
                       onClick={handleLogout}
                       className="flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 rounded-xl w-full"
                     >
                       <LogOut className="w-4 h-4" />
-                      Sign Out
+                      {t('nav.logout')}
                     </button>
                   </>
                 ) : (
                   <div className="flex flex-col gap-2 px-4 pt-2">
                     <Link to="/login" className="btn-secondary btn-sm justify-center">
-                      Sign In
+                      {t('nav.login')}
                     </Link>
                     <Link to="/register" className="btn-primary btn-sm justify-center">
-                      Get Started
+                      {t('nav.register')}
                     </Link>
                   </div>
                 )}
@@ -250,6 +252,7 @@ const Navbar: React.FC = () => {
 };
 
 const Footer: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <footer className="bg-gray-900 dark:bg-gray-950 text-gray-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -260,7 +263,7 @@ const Footer: React.FC = () => {
                 <Calendar className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-display font-bold text-white">
-                Event<span className="text-brand-400">Hub</span>
+                {t('app.name')}<span className="text-brand-400">Hub</span>
               </span>
             </div>
             <p className="text-gray-400 max-w-md text-sm leading-relaxed">
@@ -269,11 +272,11 @@ const Footer: React.FC = () => {
             </p>
           </div>
           <div>
-            <h3 className="text-white font-semibold mb-4">Platform</h3>
+            <h3 className="text-white font-semibold mb-4">{t('nav.home')}</h3>
             <ul className="space-y-3">
-              <li><Link to="/events" className="text-sm text-gray-400 hover:text-white transition-colors">Browse Events</Link></li>
-              <li><Link to="/events/create" className="text-sm text-gray-400 hover:text-white transition-colors">Create Event</Link></li>
-              <li><Link to="/register" className="text-sm text-gray-400 hover:text-white transition-colors">Get Started</Link></li>
+              <li><Link to="/events" className="text-sm text-gray-400 hover:text-white transition-colors">{t('nav.events')}</Link></li>
+              <li><Link to="/events/create" className="text-sm text-gray-400 hover:text-white transition-colors">{t('nav.create')}</Link></li>
+              <li><Link to="/register" className="text-sm text-gray-400 hover:text-white transition-colors">{t('nav.register')}</Link></li>
             </ul>
           </div>
           <div>
@@ -287,7 +290,7 @@ const Footer: React.FC = () => {
         </div>
         <div className="border-t border-gray-800 mt-10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-gray-500">
-            &copy; {new Date().getFullYear()} EventHub. All rights reserved.
+            &copy; {new Date().getFullYear()} {t('app.name')}. All rights reserved.
           </p>
           <p className="text-sm text-gray-500">
             Built with FastAPI &amp; React

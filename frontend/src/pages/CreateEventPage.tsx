@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 import { eventService } from '../services/event.service';
 import { categoryService } from '../services/category.service';
+import { useTranslation } from '../hooks/useTranslation';
 import type { Category, EventCreate } from '../types';
 import toast from 'react-hot-toast';
 
 const CreateEventPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,11 +76,11 @@ const CreateEventPage: React.FC = () => {
       };
 
       const event = await eventService.createEvent(eventData);
-      toast.success('Event created successfully!');
+      toast.success(t('toast.created'));
       navigate(`/events/${event.slug}`);
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } } };
-      toast.error(err?.response?.data?.detail || 'Failed to create event');
+      toast.error(err?.response?.data?.detail || t('toast.createFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -95,73 +97,73 @@ const CreateEventPage: React.FC = () => {
         className="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back
+        {t('common.back')}
       </button>
 
       <div className="mb-8">
-        <h1 className="section-title">Create New Event</h1>
+        <h1 className="section-title">{t('create.title')}</h1>
         <p className="section-subtitle">
-          Fill in the details below to create your event
+          {t('create.subtitle')}
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="card p-8 space-y-8">
         {/* Basic Information */}
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Basic Information</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{t('create.basicInfo')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
-              <label className="label">Event Title *</label>
+              <label className="label">{t('create.eventTitle')}</label>
               <input
                 type="text"
                 required
                 value={formData.title}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 className="input"
-                placeholder="Enter event title"
+                placeholder={t('create.titlePlaceholder')}
               />
             </div>
             <div className="md:col-span-2">
-              <label className="label">Short Description</label>
+              <label className="label">{t('create.shortDesc')}</label>
               <textarea
                 value={formData.short_description}
                 onChange={(e) => handleChange('short_description', e.target.value)}
                 className="input h-20 resize-none"
-                placeholder="Brief description (max 500 chars)"
+                placeholder={t('create.shortDescPlaceholder')}
                 maxLength={500}
               />
             </div>
             <div className="md:col-span-2">
-              <label className="label">Full Description *</label>
+              <label className="label">{t('create.fullDesc')}</label>
               <textarea
                 required
                 value={formData.description}
                 onChange={(e) => handleChange('description', e.target.value)}
                 className="input h-32 resize-none"
-                placeholder="Detailed description of your event"
+                placeholder={t('create.fullDescPlaceholder')}
               />
             </div>
             <div>
-              <label className="label">Category</label>
+              <label className="label">{t('create.category')}</label>
               <select
                 value={formData.category_id}
                 onChange={(e) => handleChange('category_id', e.target.value)}
                 className="input"
               >
-                <option value="">Select category</option>
+                <option value="">{t('create.selectCategory')}</option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="label">Slug</label>
+              <label className="label">{t('create.slug')}</label>
               <input
                 type="text"
                 value={formData.slug}
                 onChange={(e) => handleChange('slug', e.target.value)}
                 className="input"
-                placeholder="event-url-slug"
+                placeholder={t('create.slugPlaceholder')}
               />
             </div>
           </div>
@@ -169,10 +171,10 @@ const CreateEventPage: React.FC = () => {
 
         {/* Date & Time */}
         <div className="border-t border-gray-100 pt-8">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Date & Time</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{t('create.dateTime')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="label">Start Date & Time *</label>
+              <label className="label">{t('create.startDateTime')}</label>
               <input
                 type="datetime-local"
                 required
@@ -182,7 +184,7 @@ const CreateEventPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="label">End Date & Time *</label>
+              <label className="label">{t('create.endDateTime')}</label>
               <input
                 type="datetime-local"
                 required
@@ -192,7 +194,7 @@ const CreateEventPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="label">Registration Deadline</label>
+              <label className="label">{t('create.regDeadline')}</label>
               <input
                 type="datetime-local"
                 value={formData.registration_deadline}
@@ -205,7 +207,7 @@ const CreateEventPage: React.FC = () => {
 
         {/* Location */}
         <div className="border-t border-gray-100 pt-8">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Location</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{t('create.location')}</h2>
           <div className="space-y-4">
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -214,62 +216,62 @@ const CreateEventPage: React.FC = () => {
                 onChange={(e) => handleChange('is_virtual', e.target.checked)}
                 className="w-4 h-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
               />
-              <span className="text-sm text-gray-700 dark:text-gray-300">This is a virtual event</span>
+              <span className="text-sm text-gray-700 dark:text-gray-300">{t('create.isVirtualEvent')}</span>
             </label>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="label">Venue *</label>
+                <label className="label">{t('create.venue')}</label>
                 <input
                   type="text"
                   required
                   value={formData.venue}
                   onChange={(e) => handleChange('venue', e.target.value)}
                   className="input"
-                  placeholder="Venue name"
+                  placeholder={t('create.venuePlaceholder')}
                 />
               </div>
               <div>
-                <label className="label">Address</label>
+                <label className="label">{t('create.address')}</label>
                 <input
                   type="text"
                   value={formData.address}
                   onChange={(e) => handleChange('address', e.target.value)}
                   className="input"
-                  placeholder="Street address"
+                  placeholder={t('create.addressPlaceholder')}
                 />
               </div>
               <div>
-                <label className="label">City *</label>
+                <label className="label">{t('create.city')}</label>
                 <input
                   type="text"
                   required
                   value={formData.city}
                   onChange={(e) => handleChange('city', e.target.value)}
                   className="input"
-                  placeholder="City"
+                  placeholder={t('create.cityPlaceholder')}
                 />
               </div>
               <div>
-                <label className="label">Country *</label>
+                <label className="label">{t('create.country')}</label>
                 <input
                   type="text"
                   required
                   value={formData.country}
                   onChange={(e) => handleChange('country', e.target.value)}
                   className="input"
-                  placeholder="Country"
+                  placeholder={t('create.countryPlaceholder')}
                 />
               </div>
               {formData.is_virtual && (
                 <div className="md:col-span-2">
-                  <label className="label">Virtual Event Link</label>
+                  <label className="label">{t('create.virtualLink')}</label>
                   <input
                     type="url"
                     value={formData.virtual_link}
                     onChange={(e) => handleChange('virtual_link', e.target.value)}
                     className="input"
-                    placeholder="https://zoom.us/j/..."
+                    placeholder={t('create.virtualLinkPlaceholder')}
                   />
                 </div>
               )}
@@ -279,10 +281,10 @@ const CreateEventPage: React.FC = () => {
 
         {/* Capacity & Pricing */}
         <div className="border-t border-gray-100 pt-8">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Capacity & Pricing</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{t('create.capacityPricing')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="label">Total Capacity *</label>
+              <label className="label">{t('create.totalCapacity')}</label>
               <input
                 type="number"
                 required
@@ -293,7 +295,7 @@ const CreateEventPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="label">Price ($)</label>
+              <label className="label">{t('create.priceLabel')}</label>
               <input
                 type="number"
                 min={0}
@@ -301,11 +303,11 @@ const CreateEventPage: React.FC = () => {
                 value={formData.price}
                 onChange={(e) => handleChange('price', parseFloat(e.target.value) || 0)}
                 className="input"
-                placeholder="0.00 for free"
+                placeholder={t('create.pricePlaceholder')}
               />
             </div>
             <div>
-              <label className="label">Currency</label>
+              <label className="label">{t('create.currency')}</label>
               <select
                 value={formData.currency}
                 onChange={(e) => handleChange('currency', e.target.value)}
@@ -326,7 +328,7 @@ const CreateEventPage: React.FC = () => {
             onClick={() => navigate(-1)}
             className="btn-secondary"
           >
-            Cancel
+            {t('create.cancel')}
           </button>
           <button
             type="submit"
@@ -334,7 +336,7 @@ const CreateEventPage: React.FC = () => {
             className="btn-primary"
           >
             <Save className="w-4 h-4" />
-            {isSubmitting ? 'Creating...' : 'Create Event'}
+            {isSubmitting ? t('create.creating') : t('create.createEvent')}
           </button>
         </div>
       </form>

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 import { User, Mail, Phone, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const ProfilePage: React.FC = () => {
+  const { t } = useTranslation();
   const { user, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,11 +22,11 @@ const ProfilePage: React.FC = () => {
 
     try {
       await updateProfile(formData);
-      toast.success('Profile updated');
+      toast.success(t('toast.profileUpdated'));
       setIsEditing(false);
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } } };
-      toast.error(err?.response?.data?.detail || 'Failed to update profile');
+      toast.error(err?.response?.data?.detail || t('toast.profileUpdateFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -57,19 +59,19 @@ const ProfilePage: React.FC = () => {
       {/* Profile Form */}
       <div className="card p-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Profile Details</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('profile.title')}</h2>
           <button
             onClick={() => setIsEditing(!isEditing)}
             className={`btn-sm ${isEditing ? 'btn-secondary' : 'btn-primary'}`}
           >
-            {isEditing ? 'Cancel' : 'Edit Profile'}
+            {isEditing ? t('profile.cancel') : t('profile.edit')}
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="label">Full Name</label>
+              <label className="label">{t('profile.fullName')}</label>
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -82,7 +84,7 @@ const ProfilePage: React.FC = () => {
               </div>
             </div>
             <div>
-              <label className="label">Username</label>
+              <label className="label">{t('profile.username')}</label>
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -95,7 +97,7 @@ const ProfilePage: React.FC = () => {
               </div>
             </div>
             <div>
-              <label className="label">Email</label>
+              <label className="label">{t('profile.email')}</label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -108,7 +110,7 @@ const ProfilePage: React.FC = () => {
               </div>
             </div>
             <div>
-              <label className="label">Phone</label>
+              <label className="label">{t('profile.phone')}</label>
               <div className="relative">
                 <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -117,7 +119,7 @@ const ProfilePage: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="input pl-12"
                   disabled={!isEditing}
-                  placeholder="Not provided"
+                  placeholder={t('profile.notProvided')}
                 />
               </div>
             </div>
@@ -131,7 +133,7 @@ const ProfilePage: React.FC = () => {
                 className="btn-primary"
               >
                 <Save className="w-4 h-4" />
-                {isLoading ? 'Saving...' : 'Save Changes'}
+                {isLoading ? t('profile.saving') : t('profile.save')}
               </button>
             </div>
           )}
@@ -139,22 +141,22 @@ const ProfilePage: React.FC = () => {
       </div>
 
       {/* Account Info */}
-      <div className="card p-8 mt-6">          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Account Information</h2>
+      <div className="card p-8 mt-6">          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('profile.accountInfo')}</h2>
         <div className="space-y-3 text-sm">
           <div className="flex justify-between py-2 border-b border-gray-50">
-            <span className="text-gray-500">Member Since</span>
+            <span className="text-gray-500">{t('profile.memberSince')}</span>
             <span className="text-gray-900 font-medium">
               {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
             </span>
           </div>
           <div className="flex justify-between py-2 border-b border-gray-50">
-            <span className="text-gray-500">Role</span>
+            <span className="text-gray-500">{t('profile.role')}</span>
             <span className="text-gray-900 font-medium capitalize">{user?.role}</span>
           </div>
           <div className="flex justify-between py-2">
-            <span className="text-gray-500">Account Status</span>
+            <span className="text-gray-500">{t('profile.accountStatus')}</span>
             <span className={`${user?.is_active ? 'text-green-600' : 'text-red-600'} font-medium`}>
-              {user?.is_active ? 'Active' : 'Inactive'}
+              {user?.is_active ? t('profile.active') : t('profile.inactive')}
             </span>
           </div>
         </div>
