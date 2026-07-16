@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { analyticsService } from '../services/analytics.service';
+import { AnalyticsSkeleton } from '../components/Skeleton';
 import type { AnalyticsOverview } from '../types';
 import {
   TrendingUp, Calendar, Ticket, DollarSign, Users,
-  BarChart3, Clock,
+  BarChart3, Clock, RefreshCw, AlertCircle,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -45,29 +47,37 @@ const AnalyticsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-1/4 mb-8" />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-24 bg-gray-100 rounded-2xl" />
-          ))}
-        </div>
-        <div className="h-64 bg-gray-100 rounded-2xl" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <AnalyticsSkeleton />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <BarChart3 className="w-16 h-16 text-red-300 mx-auto mb-4" />
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">{error}</h2>
-        <button onClick={fetchData} className="btn-primary mt-4">Retry</button>
+      <div className="max-w-7xl mx-auto px-4 py-20 text-center animate-fade-in">
+        <div className="w-20 h-20 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-4">
+          <AlertCircle className="w-10 h-10 text-red-400" />
+        </div>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Unable to load analytics</h2>
+        <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
+          {error}. This could be a temporary issue — please try again.
+        </p>
+        <button
+          onClick={fetchData}
+          className="btn-primary inline-flex items-center gap-2"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Try Again
+        </button>
       </div>
     );
   }
 
   if (!overview) return null;
+
+  // ── Empty state when account has no events or data yet ──
+  const hasNoData = overview.total_events === 0 && overview.total_bookings === 0;
 
   const stats = [
     {
@@ -99,6 +109,27 @@ const AnalyticsPage: React.FC = () => {
       bg: 'bg-purple-100',
     },
   ];
+
+  if (hasNoData) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-20 text-center animate-fade-in">
+        <div className="w-20 h-20 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+          <BarChart3 className="w-10 h-10 text-gray-300 dark:text-gray-600" />
+        </div>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No data yet</h2>
+        <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
+          Your analytics dashboard will populate once you create events and start receiving bookings.
+        </p>
+        <Link
+          to="/events/create"
+          className="btn-primary inline-flex items-center gap-2"
+        >
+          <Calendar className="w-4 h-4" />
+          Create Your First Event
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 animate-fade-in">

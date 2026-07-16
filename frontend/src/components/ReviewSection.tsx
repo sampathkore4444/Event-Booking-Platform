@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { reviewService } from '../services/review.service';
 import StarRating from './StarRating';
+import { ReviewSkeleton } from './Skeleton';
 import type { Review, ReviewStats } from '../types';
 import { format } from 'date-fns';
-import { MessageSquare, ThumbsUp, Trash2, Edit3 } from 'lucide-react';
+import { MessageSquare, ThumbsUp, Trash2, Edit3, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface ReviewSectionProps {
@@ -112,17 +113,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ eventId }) => {
   const hasReviewed = !!userReview;
 
   if (isLoading) {
-    return (
-      <div className="animate-pulse space-y-4">
-        <div className="h-8 bg-gray-200 rounded w-1/4" />
-        <div className="h-4 bg-gray-200 rounded w-1/3" />
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-20 bg-gray-100 rounded-xl" />
-          ))}
-        </div>
-      </div>
-    );
+    return <ReviewSkeleton />;
   }
 
   return (
@@ -265,9 +256,14 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ eventId }) => {
 
       {/* Reviews List */}
       {reviews.length === 0 ? (
-        <div className="text-center py-12">
-          <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 dark:text-gray-400">No reviews yet. Be the first to review!</p>
+        <div className="text-center py-16 px-4">
+          <div className="w-20 h-20 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+            <Star className="w-10 h-10 text-gray-300 dark:text-gray-600" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No reviews yet</h3>
+          <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+            Be the first to share your experience and help others discover great events!
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
