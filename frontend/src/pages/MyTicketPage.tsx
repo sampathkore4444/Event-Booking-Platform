@@ -159,7 +159,7 @@ const MyTicketPage: React.FC = () => {
 
     // ── Build 25×25 module matrix ──
     // 0 = white (light), 1 = black (dark)
-    const modules: number[][] = Array.from({ length: MODULE_COUNT }, () => Array(MODULE_COUNT).fill(0));
+    const modules: number[][] = Array.from({ length: MODULE_COUNT }, () => Array(MODULE_COUNT).fill(-1));
 
     // Position detection patterns (7×7)
     function placePattern(row: number, col: number) {
@@ -193,7 +193,7 @@ const MyTicketPage: React.FC = () => {
       if (col === 6) col = 5; // Skip timing column
       for (let row = MODULE_COUNT - 1; row >= 0; row--) {
         for (const c of [col, col - 1]) {
-          if (c < 0 || modules[row][c] !== 0) continue;
+          if (c < 0 || modules[row][c] !== -1) continue;
           if (bitIdx < allCodewords.length * 8) {
             const byteIdx = Math.floor(bitIdx / 8);
             const bitPos = 7 - (bitIdx % 8);
@@ -206,7 +206,7 @@ const MyTicketPage: React.FC = () => {
       if (col < 0) break;
       for (let row = 0; row < MODULE_COUNT; row++) {
         for (const c of [col, col - 1]) {
-          if (c < 0 || modules[row][c] !== 0) continue;
+          if (c < 0 || modules[row][c] !== -1) continue;
           if (bitIdx < allCodewords.length * 8) {
             const byteIdx = Math.floor(bitIdx / 8);
             const bitPos = 7 - (bitIdx % 8);
@@ -220,7 +220,8 @@ const MyTicketPage: React.FC = () => {
     // ── Apply mask pattern 0 (reference) ──
     for (let row = 0; row < MODULE_COUNT; row++) {
       for (let col = 0; col < MODULE_COUNT; col++) {
-        if (modules[row][col] !== 0 && modules[row][col] !== 1) continue;
+        // Skip uninitialized cells; data cells (0/1) are masked below
+        if (modules[row][col] === -1) continue;
         if (row < 9 && col < 9) continue;  // Keep format area
         if (row < 9 && col > 16) continue;
         if (row > 16 && col < 9) continue;
@@ -241,7 +242,7 @@ const MyTicketPage: React.FC = () => {
       if (i < formatBits.length) modules[r][c] = formatBits[i];
     });
     // Dark module
-    modules[17][8] = 0;
+    modules[17][8] = 1;
 
     // ── Render ──
     ctx.fillStyle = '#ffffff';
