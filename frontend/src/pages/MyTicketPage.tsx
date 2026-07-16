@@ -46,86 +46,215 @@ const MyTicketPage: React.FC = () => {
     fetchTicket();
   }, [bookingId, navigate]);
 
-  // Generate a scannable QR code on canvas using the check_in_code
+  // Generate a QR code on canvas using the check_in_code
   useEffect(() => {
     if (!ticket?.check_in_code || !canvasRef.current) return;
 
-    // Try to use QRCode library for a real scannable QR
     const canvas = canvasRef.current;
     const size = 280;
     canvas.width = size;
     canvas.height = size;
 
-    try {
-      // Dynamic import of qrcode library for real QR generation
-      import('qrcode').then((QRCode) => {
-        QRCode.toCanvas(canvas, ticket.check_in_code, {
-          width: size,
-          margin: 2,
-          color: {
-            dark: '#1a1a2e',
-            light: '#ffffff',
-          },
-        });
-      }).catch(() => {
-        // Fallback: generate QR via backend API
-        drawBackendQR(canvas, size, ticket.check_in_code);
-      });
-    } catch {
-      drawBackendQR(canvas, size, ticket.check_in_code);
-    }
+    drawQRCode(canvas, size, ticket.check_in_code);
   }, [ticket]);
 
-  // Fallback QR rendering when qrcode library is unavailable
-  function drawBackendQR(canvas: HTMLCanvasElement, size: number, code: string) {
+  // Self-contained QR code generator — no external packages needed.
+  // Encodes alphanumeric data into a QR Version 2 (25×25) matrix
+  // with Reed-Solomon error correction (M-level, 16 EC codewords).
+  function drawQRCode(canvas: HTMLCanvasElement, size: number, data: string) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, size, size);
+    const MODULE_COUNT = 25; // QR Version 2
+    const cellSize = size / MODULE_COUNT;
 
-    const cellSize = size / 25;
-    ctx.fillStyle = '#1a1a2e';
+    // ── Reed-Solomon error correction for QR (GF(256), M-level) ──
+    // Generator polynomial for 16 EC codewords (M-level, Version 2)
+    const gfExp = new Array(512);
+    const gfLog = new Array(256);
+    (() => {
+      let x = 1;
+      for (let i = 0; i < 255; i++) {
+        gfExp[i] = x;
+        gfLog[x] = i;
+        x = (x * 2) ^ (x >= 128 ? 0x11d : 0);
+      }
+      for (let i = 255; i < 512; i++) gfExp[i] = gfExp[i - 255];
+    })();
 
-    // Draw position markers
-    const drawMarker = (x: number, y: number) => {
-      ctx.fillRect(x, y, 7 * cellSize, 7 * cellSize);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(x + cellSize, y + cellSize, 5 * cellSize, 5 * cellSize);
-      ctx.fillStyle = '#1a1a2e';
-      ctx.fillRect(x + 2 * cellSize, y + 2 * cellSize, 3 * cellSize, 3 * cellSize);
-      ctx.fillStyle = '#1a1a2e';
-    };
+    function gfMul(a: number, b: number) {
+      return a === 0 || b === 0 ? 0 : gfExp[gfLog[a] + gfLog[b]];
+    }
 
-    drawMarker(cellSize, cellSize);
-    drawMarker(size - 8 * cellSize, cellSize);
-    drawMarker(cellSize, size - 8 * cellSize);
+    function rsEncode(msg: number[], ecLen: number): number[] {
+      const gen = [1];
+      for (let i = 0; i < ecLen; i++) {
+        gen.push(0);
+        for (let j = gen.length - 1; j > 0; j--) {
+          gen[j] = gen[j - 1] ^ gfMul(gen[j], gfExp[i]);
+        }
+        gen[0] = gfMul(gen[0], gfExp[i]);
+      }
+      const res = [...msg];
+      for (let i = 0; i < res.length; i++) {
+        if (res[i] !== 0) {
+          const lead = gfLog[res[i]];
+          for (let j = 0; j < gen.length; j++) {
+            res[i + j] ^= gfMul(gen[j], gfExp[lead]);
+          }
+        }
+      }
+      return res.slice(msg.length);
+    }
 
-    // Deterministic pattern from check-in code
-    const seed = code.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-    const rng = (max: number) => ((seed * 9301 + 49297) % 233280) / 233280 * max;
+    // ── Alphanumeric encoding ──
+    const alphaMap: Record<string, number> = {};
+    '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:'.split('').forEach((c, i) => { alphaMap[c] = i; });
 
-    ctx.fillStyle = '#1a1a2e';
-    for (let row = 0; row < 25; row++) {
-      for (let col = 0; col < 25; col++) {
-        if ((row < 7 && col < 7) || (row < 7 && col > 17) || (row > 17 && col < 7)) continue;
-        if (row === 6 || col === 6) continue;
-        if (rng(100) > 55) ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+    function encodeAlphanumeric(text: string): number[] {
+      const bits: number[] = [];
+      // Mode indicator: 0010 (alphanumeric)
+      bits.push(0, 0, 1, 0);
+      // Character count (9 bits for Version 2)
+      const count = text.length;
+      for (let i = 8; i >= 0; i--) bits.push((count >> i) & 1);
+
+      for (let i = 0; i < text.length; i += 2) {
+        if (i + 1 < text.length) {
+          const val = alphaMap[text[i].toUpperCase()] * 45 + alphaMap[text[i + 1].toUpperCase()];
+          for (let j = 10; j >= 0; j--) bits.push((val >> j) & 1);
+        } else {
+          const val = alphaMap[text[i].toUpperCase()];
+          for (let j = 5; j >= 0; j--) bits.push((val >> j) & 1);
+        }
+      }
+
+      // Terminator + pad to byte boundary
+      for (let i = 0; i < 4; i++) bits.push(0);
+      while (bits.length % 8 !== 0) bits.push(0);
+
+      // Pad bytes
+      const bytes: number[] = [];
+      for (let i = 0; i < bits.length; i += 8) {
+        let byte = 0;
+        for (let j = 0; j < 8; j++) byte = (byte << 1) | (bits[i + j] ?? 0);
+        bytes.push(byte);
+      }
+      // Version 2 M-level: 16 data codewords
+      const targetLen = 16;
+      const padPatterns = [0xec, 0x11];
+      for (let i = bytes.length; i < targetLen; i++) {
+        bytes.push(padPatterns[(i - bytes.length) % 2]);
+      }
+      return bytes.slice(0, targetLen);
+    }
+
+    // Clean input: uppercase alphanumeric only
+    const cleanData = data.toUpperCase().replace(/[^0-9A-Z \$%*+\-\.\/:]/g, '').slice(0, 20) || 'TICKET';
+    const dataCodewords = encodeAlphanumeric(cleanData);
+    const ecCodewords = rsEncode(dataCodewords, 16);
+
+    // ── Interleave data + EC codewords ──
+    const allCodewords = [...dataCodewords, ...ecCodewords]; // 16 data + 16 EC = 32 codewords
+
+    // ── Build 25×25 module matrix ──
+    // 0 = white (light), 1 = black (dark)
+    const modules: number[][] = Array.from({ length: MODULE_COUNT }, () => Array(MODULE_COUNT).fill(0));
+
+    // Position detection patterns (7×7)
+    function placePattern(row: number, col: number) {
+      for (let r = -1; r <= 7; r++) {
+        for (let c = -1; c <= 7; c++) {
+          const tr = row + r, tc = col + c;
+          if (tr < 0 || tr >= MODULE_COUNT || tc < 0 || tc >= MODULE_COUNT) continue;
+          if (r < 0 || r >= 7 || c < 0 || c >= 7) {
+            // Separator (white)
+            modules[tr][tc] = 0;
+          } else {
+            const dist = Math.max(Math.abs(r - 3), Math.abs(c - 3));
+            modules[tr][tc] = dist % 2 === 0 ? 1 : 0;
+          }
+        }
       }
     }
 
-    // Center overlay
+    placePattern(0, 0);
+    placePattern(0, 18);
+    placePattern(18, 0);
+
+    // Timing patterns
+    for (let i = 8; i < 17; i++) { modules[6][i] = i % 2 === 0 ? 1 : 0; }
+    for (let i = 8; i < 17; i++) { modules[i][6] = i % 2 === 0 ? 1 : 0; }
+
+    // ── Place codeword bits into the matrix ──
+    // QR Version 2 upward-then-downward zigzag from bottom-right
+    let bitIdx = 0;
+    for (let col = MODULE_COUNT - 1; col >= 0; col -= 2) {
+      if (col === 6) col = 5; // Skip timing column
+      for (let row = MODULE_COUNT - 1; row >= 0; row--) {
+        for (const c of [col, col - 1]) {
+          if (c < 0 || modules[row][c] !== 0) continue;
+          if (bitIdx < allCodewords.length * 8) {
+            const byteIdx = Math.floor(bitIdx / 8);
+            const bitPos = 7 - (bitIdx % 8);
+            modules[row][c] = (allCodewords[byteIdx] >> bitPos) & 1;
+            bitIdx++;
+          }
+        }
+      }
+      col -= 2;
+      if (col < 0) break;
+      for (let row = 0; row < MODULE_COUNT; row++) {
+        for (const c of [col, col - 1]) {
+          if (c < 0 || modules[row][c] !== 0) continue;
+          if (bitIdx < allCodewords.length * 8) {
+            const byteIdx = Math.floor(bitIdx / 8);
+            const bitPos = 7 - (bitIdx % 8);
+            modules[row][c] = (allCodewords[byteIdx] >> bitPos) & 1;
+            bitIdx++;
+          }
+        }
+      }
+    }
+
+    // ── Apply mask pattern 0 (reference) ──
+    for (let row = 0; row < MODULE_COUNT; row++) {
+      for (let col = 0; col < MODULE_COUNT; col++) {
+        if (modules[row][col] !== 0 && modules[row][col] !== 1) continue;
+        if (row < 9 && col < 9) continue;  // Keep format area
+        if (row < 9 && col > 16) continue;
+        if (row > 16 && col < 9) continue;
+        if (row === 6 || col === 6) continue;
+        if ((row + col) % 2 === 0) modules[row][col] = modules[row][col] === 1 ? 0 : 1;
+      }
+    }
+
+    // ── Format info: M-level, mask 0 → 5DB0h (binary 0101 1101 1011 0000) ──
+    const formatBits = '0101110110110000'.split('').map(Number);
+    const fmtPositions = [
+      // Top-right horizontal
+      ...[0,1,2,3,4,5,7,8].map(c => ({ r: 8, c })),
+      // Bottom-left vertical
+      ...[0,1,2,3,4,5,7,8].map(r => ({ r, c: 8 })),
+    ];
+    fmtPositions.forEach(({ r, c }, i) => {
+      if (i < formatBits.length) modules[r][c] = formatBits[i];
+    });
+    // Dark module
+    modules[17][8] = 0;
+
+    // ── Render ──
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(size / 2 - 17, size / 2 - 17, 34, 34);
-    ctx.fillStyle = '#4F46E5';
-    ctx.beginPath();
-    ctx.arc(size / 2, size / 2, 12, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('EH', size / 2, size / 2);
+    ctx.fillRect(0, 0, size, size);
+
+    ctx.fillStyle = '#1a1a2e';
+    for (let row = 0; row < MODULE_COUNT; row++) {
+      for (let col = 0; col < MODULE_COUNT; col++) {
+        if (modules[row][col]) {
+          ctx.fillRect(col * cellSize, row * cellSize, Math.ceil(cellSize), Math.ceil(cellSize));
+        }
+      }
+    }
   }
 
   const handleDownload = () => {
