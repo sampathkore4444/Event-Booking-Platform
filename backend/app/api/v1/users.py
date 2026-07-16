@@ -139,7 +139,6 @@ async def change_user_role(
     Available roles: attendee, organizer, admin
     """
     if current_user.id == user_id:
-        from app.core.exceptions import ForbiddenException
         raise ForbiddenException("Cannot change your own role")
     user = crud_user.change_role(db, user_id=user_id, new_role=obj_in.role)
     return user
