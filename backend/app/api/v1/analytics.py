@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 from app.database import get_db
 from app.core.deps import get_current_user
-from app.core.exceptions import ForbiddenException
+from app.core.exceptions import ForbiddenException, NotFoundException
 from app.models.booking import Booking, BookingStatus
 from app.models.event import Event, EventStatus
 from app.models.user import User, UserRole
@@ -110,7 +110,6 @@ async def get_event_analytics(
     """Get detailed analytics for a specific event."""
     event = crud_event.get(db, event_id)
     if not event:
-        from app.core.exceptions import NotFoundException
         raise NotFoundException("Event", event_id)
 
     if current_user.role != UserRole.ADMIN and event.organizer_id != current_user.id:

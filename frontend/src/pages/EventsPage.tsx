@@ -141,7 +141,7 @@ const EventsPage: React.FC = () => {
                 onChange={(e) => { setIsFree(e.target.checked); setPage(1); }}
                 className="w-4 h-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
               />
-              <span className="text-sm text-gray-600">Free Events</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Free Events</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -150,7 +150,7 @@ const EventsPage: React.FC = () => {
                 onChange={(e) => { setIsVirtual(e.target.checked); setPage(1); }}
                 className="w-4 h-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
               />
-              <span className="text-sm text-gray-600">Virtual Events</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Virtual Events</span>
             </label>
             {hasFilters && (
               <button
@@ -201,8 +201,7 @@ const EventsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Results Count */}
-      <p className="text-sm text-gray-500 mb-6">
+      {/* Results Count */}          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
         {isLoading ? 'Searching...' : `Showing ${events.length} of ${total} events`}
       </p>
 
@@ -224,8 +223,8 @@ const EventsPage: React.FC = () => {
       ) : events.length === 0 ? (
         <div className="text-center py-20">
           <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No events found</h3>
-          <p className="text-gray-500 mb-6">Try adjusting your search or filters</p>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No events found</h3>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">Try adjusting your search or filters</p>
           {hasFilters ? (
             <button onClick={clearFilters} className="btn-primary">
               Clear Filters
@@ -260,9 +259,9 @@ const EventsPage: React.FC = () => {
                     <span className="badge bg-red-500 text-white">Sold Out</span>
                   </div>
                 )}
-                <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 text-center">
-                  <div className="text-xs font-medium text-gray-500">{format(new Date(event.start_date), 'MMM')}</div>
-                  <div className="text-lg font-bold text-gray-900 -mt-1">{format(new Date(event.start_date), 'dd')}</div>
+                <div className="absolute bottom-3 left-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-lg px-3 py-2 text-center">
+                  <div className="text-xs font-medium text-gray-500 dark:text-gray-400">{format(new Date(event.start_date), 'MMM')}</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-white -mt-1">{format(new Date(event.start_date), 'dd')}</div>
                 </div>
               </div>
               <div className="p-5">
@@ -270,17 +269,17 @@ const EventsPage: React.FC = () => {
                   <MapPin className="w-3.5 h-3.5" />
                   {event.city}, {event.country}
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-brand-600 transition-colors line-clamp-2">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors line-clamp-2">
                   {event.title}
                 </h3>
-                <p className="text-sm text-gray-500 line-clamp-2 mb-4">
+                <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4">
                   {event.short_description || event.description?.slice(0, 100)}
                 </p>
                 <div className="flex items-center justify-between">
-                  <span className={`font-semibold ${event.is_free ? 'text-green-600' : 'text-gray-900'}`}>
+                  <span className={`font-semibold ${event.is_free ? 'text-green-600' : 'text-gray-900 dark:text-white'}`}>
                     {event.is_free ? 'Free' : `$${event.price.toFixed(2)}`}
                   </span>
-                  <span className={`text-xs font-medium ${event.available_tickets > 10 ? 'text-gray-400' : 'text-red-500'}`}>
+                  <span className={`text-xs font-medium ${event.available_tickets > 10 ? 'text-gray-400 dark:text-gray-500' : 'text-red-500'}`}>
                     {event.available_tickets} left
                   </span>
                 </div>

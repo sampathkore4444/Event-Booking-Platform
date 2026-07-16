@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
+import { ThemeContext, useThemeProvider } from './hooks/useTheme';
+import { initLanguage } from './i18n';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import EventsPage from './pages/EventsPage';
@@ -11,6 +13,7 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import MyTicketPage from './pages/MyTicketPage';
+import AnalyticsPage from './pages/AnalyticsPage';
 
 // Protected route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -90,17 +93,39 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <AnalyticsPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>
   );
 }
 
+const AppContent: React.FC = () => {
+  const themeData = useThemeProvider();
+
+  useEffect(() => {
+    initLanguage();
+  }, []);
+
+  return (
+    <ThemeContext.Provider value={themeData}>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </ThemeContext.Provider>
+  );
+};
+
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <AppRoutes />
-    </AuthProvider>
+    <AppContent />
   );
 };
 

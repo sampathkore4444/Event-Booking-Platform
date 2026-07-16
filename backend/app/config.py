@@ -43,6 +43,14 @@ class Settings(BaseSettings):
     STRIPE_PUBLISHABLE_KEY: str = Field(default="", alias="STRIPE_PUBLISHABLE_KEY")
     STRIPE_WEBHOOK_SECRET: str = Field(default="", alias="STRIPE_WEBHOOK_SECRET")
 
+    # WhatsApp / Twilio
+    TWILIO_ACCOUNT_SID: str = Field(default="", alias="TWILIO_ACCOUNT_SID")
+    TWILIO_AUTH_TOKEN: str = Field(default="", alias="TWILIO_AUTH_TOKEN")
+    TWILIO_WHATSAPP_FROM: str = Field(default="+14155238886", alias="TWILIO_WHATSAPP_FROM")
+
+    # Telegram
+    TELEGRAM_BOT_TOKEN: str = Field(default="", alias="TELEGRAM_BOT_TOKEN")
+
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = Field(default=60, alias="RATE_LIMIT_PER_MINUTE")
 

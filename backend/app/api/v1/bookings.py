@@ -17,9 +17,10 @@ from app.schemas.booking import (
     BookingResponse,
     BookingListResponse,
 )
-from app.models.booking import BookingStatus
+from app.models.booking import Booking, BookingStatus
 from app.models.user import User, UserRole
 from app.services.email import email_service
+from app.api.v1.notifications import notification_service
 from app.services.email_templates import (
     booking_confirmation_email,
     booking_cancelled_email,
@@ -148,6 +149,13 @@ async def create_booking(
                 subject=f"Booking Confirmed: {event.title} 🎉",
                 html_content=html,
             )
+            await notification_service.send_booking_confirmation(
+                phone=current_user.phone,
+                telegram_id=None,
+                attendee_name=current_user.full_name,
+                event_title=event.title,
+                booking_ref=booking.booking_reference,
+            )
 
     return booking
 
@@ -233,6 +241,13 @@ async def cancel_booking(
             to_email=user.email,
             subject=f"Booking Cancelled: {event.title}",
             html_content=html,
+        )
+        await notification_service.send_booking_confirmation(
+            phone=user.phone,
+            telegram_id=None,
+            attendee_name=user.full_name,
+            event_title=event.title,
+            booking_ref=booking.booking_reference,
         )
 
     return booking

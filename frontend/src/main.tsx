@@ -3,7 +3,11 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import App from './App'
+import { initLanguage } from './i18n'
 import './styles/index.css'
+
+// Initialize i18n before rendering
+initLanguage();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

@@ -40,8 +40,8 @@ const RegisterPage: React.FC = () => {
           <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-4">
             <Calendar className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-display font-bold text-gray-900">Create Account</h1>
-          <p className="text-gray-500 mt-2">Join EventHub today</p>
+          <h1 className="text-2xl font-display font-bold text-gray-900 dark:text-white">Create Account</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">Join EventHub today</p>
         </div>
 
         {/* Form */}
@@ -138,7 +138,7 @@ const RegisterPage: React.FC = () => {
         </div>
 
         {/* Login Link */}
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
           Already have an account?{' '}
           <Link to="/login" className="text-brand-600 hover:text-brand-700 font-semibold">
             Sign in

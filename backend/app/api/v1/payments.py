@@ -25,6 +25,7 @@ from app.services.qr_payment import (
 )
 from app.config import settings
 from app.schemas.booking import BookingUpdate
+from app.api.v1.notifications import notification_service
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -340,6 +341,13 @@ async def _handle_checkout_completed(session: dict) -> None:
                     to_email=user.email,
                     subject=f"Payment Confirmed: {event.title} 🎉",
                     html_content=html,
+                )
+                await notification_service.send_booking_confirmation(
+                    phone=user.phone,
+                    telegram_id=None,
+                    attendee_name=user.full_name,
+                    event_title=event.title,
+                    booking_ref=booking.booking_reference,
                 )
         except Exception as e:
             print(f"Stripe webhook: failed to send email: {e}")

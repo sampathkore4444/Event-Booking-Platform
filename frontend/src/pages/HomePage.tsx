@@ -11,8 +11,8 @@ const StatCard: React.FC<{ icon: React.ReactNode; value: string; label: string }
     <div className="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center mx-auto mb-4">
       {icon}
     </div>
-    <div className="text-2xl font-bold text-gray-900">{value}</div>
-    <div className="text-sm text-gray-500 mt-1">{label}</div>
+    <div className="text-2xl font-bold text-gray-900 dark:text-white">{value}</div>
+    <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">{label}</div>
   </div>
 );
 
@@ -50,9 +50,9 @@ const EventCard: React.FC<{ event: Event }> = ({ event }) => {
         )}
         {/* Date badge */}
         <div className="absolute bottom-4 left-4">
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl px-3 py-2 text-center">
-            <div className="text-xs font-medium text-gray-500">{format(startDate, 'MMM')}</div>
-            <div className="text-lg font-bold text-gray-900 -mt-1">{format(startDate, 'dd')}</div>
+          <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-xl px-3 py-2 text-center">
+            <div className="text-xs font-medium text-gray-500 dark:text-gray-400">{format(startDate, 'MMM')}</div>
+            <div className="text-lg font-bold text-gray-900 dark:text-white -mt-1">{format(startDate, 'dd')}</div>
           </div>
         </div>
       </div>
@@ -62,10 +62,10 @@ const EventCard: React.FC<{ event: Event }> = ({ event }) => {
           <MapPin className="w-3.5 h-3.5" />
           <span>{event.city}, {event.country}</span>
         </div>
-        <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-brand-600 transition-colors line-clamp-2">
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors line-clamp-2">
           {event.title}
         </h3>
-        <p className="text-sm text-gray-500 line-clamp-2 mb-4">
+        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4">
           {event.short_description || event.description?.slice(0, 100) + '...'}
         </p>
         <div className="flex items-center justify-between">
@@ -74,12 +74,12 @@ const EventCard: React.FC<{ event: Event }> = ({ event }) => {
               <span className="font-semibold text-green-600">Free</span>
             ) : (
               <>
-                <span className="font-semibold text-gray-900">${event.price.toFixed(2)}</span>
-                <span className="text-gray-400">/ ticket</span>
+                <span className="font-semibold text-gray-900 dark:text-white">${event.price.toFixed(2)}</span>
+                <span className="text-gray-400 dark:text-gray-500">/ ticket</span>
               </>
             )}
           </div>
-          <span className={`text-xs font-medium ${event.available_tickets > 10 ? 'text-gray-500' : 'text-red-500'}`}>
+          <span className={`text-xs font-medium ${event.available_tickets > 10 ? 'text-gray-500 dark:text-gray-400' : 'text-red-500'}`}>
             {event.available_tickets} left
           </span>
         </div>
@@ -97,9 +97,9 @@ const CategoryCard: React.FC<{ category: Category }> = ({ category }) => (
     <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 bg-gray-50 group-hover:scale-110 transition-transform">
       <div className="w-6 h-6 rounded" style={{ backgroundColor: category.color || '#4F46E5' }} />
     </div>
-    <h3 className="font-semibold text-gray-900 text-sm">{category.name}</h3>
+    <h3 className="font-semibold text-gray-900 dark:text-white text-sm">{category.name}</h3>
     {category.description && (
-      <p className="text-xs text-gray-500 mt-1 line-clamp-2">{category.description}</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{category.description}</p>
     )}
   </Link>
 );
@@ -236,7 +236,7 @@ const HomePage: React.FC = () => {
 
       {/* Featured Events */}
       {featuredEvents.length > 0 && (
-        <section className="py-16 lg:py-20 bg-gray-50/50">
+        <section className="py-16 lg:py-20 bg-gray-50/50 dark:bg-gray-900/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-end justify-between mb-12">
               <div>
@@ -296,7 +296,7 @@ const HomePage: React.FC = () => {
 
       {/* Upcoming Events */}
       {upcomingEvents.length > 0 && (
-        <section className="py-16 lg:py-20 bg-gray-50/50">
+        <section className="py-16 lg:py-20 bg-gray-50/50 dark:bg-gray-900/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-end justify-between mb-12">
               <div>

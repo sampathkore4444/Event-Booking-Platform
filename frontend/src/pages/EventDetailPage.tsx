@@ -13,6 +13,7 @@ import type { Event } from '../types';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import PaymentQRModal from '../components/PaymentQRModal';
+import ReviewSection from '../components/ReviewSection';
 
 const EventDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -167,7 +168,7 @@ const EventDetailPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2">
-            <div className="card p-8">
+            <div className="card p-8 dark:bg-gray-900">
               {/* Title & Meta */}
               <div className="mb-8">
                 <div className="flex items-center gap-3 text-sm text-gray-500 mb-3">
@@ -182,7 +183,7 @@ const EventDetailPage: React.FC = () => {
                   </span>
                 </div>
 
-                <h1 className="text-3xl lg:text-4xl font-display font-bold text-gray-900 mb-4">
+                <h1 className="text-3xl lg:text-4xl font-display font-bold text-gray-900 dark:text-white mb-4">
                   {event.title}
                 </h1>
 
@@ -204,16 +205,16 @@ const EventDetailPage: React.FC = () => {
 
               {/* Description */}
               <div className="mb-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">About This Event</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">About This Event</h2>
                 <div className="prose prose-gray max-w-none">
-                  <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
                     {event.description}
                   </p>
                 </div>
               </div>
 
               {/* Event Details Grid */}
-              <div className="grid grid-cols-2 gap-6 p-6 bg-gray-50 rounded-2xl">
+              <div className="grid grid-cols-2 gap-6 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
                 <div className="flex items-start gap-3">
                   <MapPin className="w-5 h-5 text-brand-500 mt-0.5" />
                   <div>
@@ -258,10 +259,10 @@ const EventDetailPage: React.FC = () => {
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24 card p-6 space-y-6">
+            <div className="sticky top-24 card p-6 space-y-6 dark:bg-gray-900">
               {/* Price */}
-              <div className="text-center pb-6 border-b border-gray-100">
-                <div className="text-4xl font-bold text-gray-900">
+              <div className="text-center pb-6 border-b border-gray-100 dark:border-gray-800">
+                <div className="text-4xl font-bold text-gray-900 dark:text-white">
                   {isFree ? 'Free' : `$${event.price.toFixed(2)}`}
                 </div>
                 {!isFree && <p className="text-sm text-gray-500 mt-1">per ticket</p>}
@@ -320,7 +321,7 @@ const EventDetailPage: React.FC = () => {
               </div>
 
               {/* Event Info */}
-              <div className="pt-6 border-t border-gray-100 space-y-4">
+              <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-4">
                 <div className="flex items-center gap-3 text-sm">
                   <Calendar className="w-4 h-4 text-gray-400" />
                   <div>
@@ -369,11 +370,10 @@ const EventDetailPage: React.FC = () => {
       </div>
 
       {/* Booking Confirmation Modal */}
-      {showBookingModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowBookingModal(false)} />
-          <div className="relative bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl animate-scale-in">
-            <h3 className="text-2xl font-display font-bold text-gray-900 mb-2">
+      {showBookingModal && (          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm" onClick={() => setShowBookingModal(false)} />
+          <div className="relative bg-white dark:bg-gray-900 rounded-3xl p-8 max-w-md w-full shadow-2xl animate-scale-in">
+            <h3 className="text-2xl font-display font-bold text-gray-900 dark:text-white mb-2">
               Confirm Booking
             </h3>
             <p className="text-gray-500 mb-6">{event?.title}</p>
@@ -387,16 +387,16 @@ const EventDetailPage: React.FC = () => {
                 <span className="text-gray-500">Date</span>
                 <span className="font-medium">{format(startDate, 'MMM d, yyyy')}</span>
               </div>
-              <div className="border-t border-gray-100 pt-4 flex justify-between">
-                <span className="font-semibold text-gray-900">Total</span>
-                <span className="font-bold text-lg text-gray-900">
+              <div className="border-t border-gray-100 dark:border-gray-800 pt-4 flex justify-between">
+                <span className="font-semibold text-gray-900 dark:text-white">Total</span>
+                <span className="font-bold text-lg text-gray-900 dark:text-white">
                   {isFree ? 'Free' : `$${(event?.price || 0) * quantity}`}
                 </span>
               </div>
 
               {/* Show payment method hint for non-free events */}
               {!isFree && event && (
-                <div className="bg-gray-50 rounded-xl p-3 text-center">
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 text-center">
                   {paymentService.isCambodiaEvent(event.country) ? (
                     <p className="text-sm text-gray-600">
                       <span className="font-semibold">Cambodia:</span> Pay via Bakong QR code
@@ -449,6 +449,11 @@ const EventDetailPage: React.FC = () => {
           instructions={qrPaymentInfo.instructions}
         />
       )}
+
+      {/* Reviews Section */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ReviewSection eventId={event.id} />
+      </div>
     </div>
   );
 };

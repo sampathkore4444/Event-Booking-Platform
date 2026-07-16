@@ -70,6 +70,7 @@ class Event(Base):
     organizer = relationship("User", back_populates="organized_events", lazy="selectin")
     category = relationship("Category", back_populates="events", lazy="selectin")
     bookings = relationship("Booking", back_populates="event", lazy="selectin")
+    reviews = relationship("Review", back_populates="event", lazy="selectin")
 
     def __repr__(self):
         return f"<Event {self.title}>"

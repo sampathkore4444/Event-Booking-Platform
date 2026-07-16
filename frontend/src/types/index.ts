@@ -214,3 +214,78 @@ export interface BookingListResponse {
   per_page: number;
   total_pages: number;
 }
+
+// Review types
+export interface Review {
+  id: string;
+  rating: number;
+  comment?: string;
+  is_verified: boolean;
+  user_id: string;
+  event_id: string;
+  user?: User;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReviewCreate {
+  event_id: string;
+  rating: number;
+  comment?: string;
+}
+
+export interface ReviewUpdate {
+  rating?: number;
+  comment?: string;
+}
+
+export interface ReviewStats {
+  total: number;
+  average_rating: number;
+  distribution: {
+    "1": number;
+    "2": number;
+    "3": number;
+    "4": number;
+    "5": number;
+  };
+}
+
+// Analytics types
+export interface AnalyticsOverview {
+  total_events: number;
+  total_bookings: number;
+  total_revenue: number;
+  confirmed_bookings: number;
+  pending_bookings: number;
+  total_organizers: number;
+  sales_daily: Array<{ date: string; revenue: number; bookings: number }>;
+  top_events: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    total_bookings: number;
+    total_revenue: number;
+  }>;
+}
+
+export interface EventAnalytics {
+  event_id: string;
+  event_title: string;
+  total_bookings: number;
+  confirmed_bookings: number;
+  cancelled_bookings: number;
+  total_revenue: number;
+  fill_rate: number;
+  total_capacity: number;
+  tickets_sold: number;
+  checked_in_count: number;
+}
+
+export interface NotificationChannelStatus {
+  email: boolean;
+  whatsapp: boolean;
+  telegram: boolean;
+  user_phone: boolean;
+  user_telegram_id: boolean;
+}

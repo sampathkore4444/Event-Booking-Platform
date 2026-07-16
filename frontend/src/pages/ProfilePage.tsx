@@ -39,10 +39,10 @@ const ProfilePage: React.FC = () => {
             {user?.full_name?.charAt(0) || 'U'}
           </span>
         </div>
-        <h1 className="text-2xl font-display font-bold text-gray-900">
+        <h1 className="text-2xl font-display font-bold text-gray-900 dark:text-white">
           {user?.full_name}
         </h1>
-        <p className="text-gray-500">{user?.email}</p>
+        <p className="text-gray-500 dark:text-gray-400">{user?.email}</p>
         <div className="flex items-center justify-center gap-2 mt-3">
           <span className={`badge ${
             user?.role === 'admin' ? 'badge-purple' :
@@ -57,7 +57,7 @@ const ProfilePage: React.FC = () => {
       {/* Profile Form */}
       <div className="card p-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Profile Details</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Profile Details</h2>
           <button
             onClick={() => setIsEditing(!isEditing)}
             className={`btn-sm ${isEditing ? 'btn-secondary' : 'btn-primary'}`}
@@ -139,8 +139,7 @@ const ProfilePage: React.FC = () => {
       </div>
 
       {/* Account Info */}
-      <div className="card p-8 mt-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Account Information</h2>
+      <div className="card p-8 mt-6">          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Account Information</h2>
         <div className="space-y-3 text-sm">
           <div className="flex justify-between py-2 border-b border-gray-50">
             <span className="text-gray-500">Member Since</span>

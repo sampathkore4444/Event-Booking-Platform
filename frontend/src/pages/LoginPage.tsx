@@ -38,8 +38,8 @@ const LoginPage: React.FC = () => {
           <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-4">
             <Calendar className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-display font-bold text-gray-900">Welcome Back</h1>
-          <p className="text-gray-500 mt-2">Sign in to your account</p>
+          <h1 className="text-2xl font-display font-bold text-gray-900 dark:text-white">Welcome Back</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">Sign in to your account</p>
         </div>
 
         {/* Form */}
@@ -103,7 +103,7 @@ const LoginPage: React.FC = () => {
         </div>
 
         {/* Register Link */}
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
           Don't have an account?{' '}
           <Link to="/register" className="text-brand-600 hover:text-brand-700 font-semibold">
             Create one
@@ -111,9 +111,9 @@ const LoginPage: React.FC = () => {
         </p>
 
         {/* Demo Credentials */}
-        <div className="mt-6 p-4 bg-gray-50 rounded-2xl">
-          <p className="text-xs font-medium text-gray-500 mb-2">Demo Credentials:</p>
-          <div className="text-xs text-gray-400 space-y-1">
+        <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
+          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Demo Credentials:</p>
+          <div className="text-xs text-gray-400 dark:text-gray-500 space-y-1">
             <p>Admin: admin@eventbooking.com / Admin123!@#</p>
           </div>
         </div>

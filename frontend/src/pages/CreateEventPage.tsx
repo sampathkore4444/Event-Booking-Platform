@@ -108,7 +108,7 @@ const CreateEventPage: React.FC = () => {
       <form onSubmit={handleSubmit} className="card p-8 space-y-8">
         {/* Basic Information */}
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Basic Information</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Basic Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <label className="label">Event Title *</label>
@@ -169,7 +169,7 @@ const CreateEventPage: React.FC = () => {
 
         {/* Date & Time */}
         <div className="border-t border-gray-100 pt-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Date & Time</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Date & Time</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="label">Start Date & Time *</label>
@@ -205,7 +205,7 @@ const CreateEventPage: React.FC = () => {
 
         {/* Location */}
         <div className="border-t border-gray-100 pt-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Location</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Location</h2>
           <div className="space-y-4">
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -214,7 +214,7 @@ const CreateEventPage: React.FC = () => {
                 onChange={(e) => handleChange('is_virtual', e.target.checked)}
                 className="w-4 h-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
               />
-              <span className="text-sm text-gray-700">This is a virtual event</span>
+              <span className="text-sm text-gray-700 dark:text-gray-300">This is a virtual event</span>
             </label>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -279,7 +279,7 @@ const CreateEventPage: React.FC = () => {
 
         {/* Capacity & Pricing */}
         <div className="border-t border-gray-100 pt-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Capacity & Pricing</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Capacity & Pricing</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="label">Total Capacity *</label>

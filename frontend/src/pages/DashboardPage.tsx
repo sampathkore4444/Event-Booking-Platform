@@ -120,7 +120,7 @@ const DashboardPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="section-title">Dashboard</h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-gray-500 dark:text-gray-400 mt-1">
             Welcome back, {user?.full_name?.split(' ')[0]}
           </p>
         </div>
@@ -134,38 +134,38 @@ const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="card p-5">
           <Ticket className="w-8 h-8 text-brand-500 mb-3" />
-          <div className="text-2xl font-bold text-gray-900">{bookings.length}</div>
-          <div className="text-sm text-gray-500">Total Bookings</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{bookings.length}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Total Bookings</div>
         </div>
         <div className="card p-5">
           <CheckCircle className="w-8 h-8 text-green-500 mb-3" />
-          <div className="text-2xl font-bold text-gray-900">
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">
             {bookings.filter(b => b.status === 'confirmed').length}
           </div>
-          <div className="text-sm text-gray-500">Confirmed</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Confirmed</div>
         </div>
         <div className="card p-5">
           <Clock className="w-8 h-8 text-yellow-500 mb-3" />
-          <div className="text-2xl font-bold text-gray-900">
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">
             {bookings.filter(b => b.status === 'pending').length}
           </div>
-          <div className="text-sm text-gray-500">Pending</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Pending</div>
         </div>
         <div className="card p-5">
           <Calendar className="w-8 h-8 text-purple-500 mb-3" />
-          <div className="text-2xl font-bold text-gray-900">{myEvents.length}</div>
-          <div className="text-sm text-gray-500">My Events</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{myEvents.length}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">My Events</div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 p-1 bg-gray-100 rounded-xl w-fit flex-wrap">
+      <div className="flex gap-1 mb-6 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-fit flex-wrap">
         <button
           onClick={() => setActiveTab('bookings')}
           className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
             activeTab === 'bookings'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
           }`}
         >
           <Ticket className="w-4 h-4 inline mr-2" />
@@ -216,7 +216,7 @@ const DashboardPage: React.FC = () => {
                 className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   bookingFilter === status
                     ? 'bg-brand-500 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
                 {status || 'All'}
@@ -241,8 +241,8 @@ const DashboardPage: React.FC = () => {
           ) : bookings.length === 0 ? (
             <div className="text-center py-16">
               <Ticket className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No bookings yet</h3>
-              <p className="text-gray-500 mb-6">Browse events and book your first experience</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No bookings yet</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">Browse events and book your first experience</p>
               <Link to="/events" className="btn-primary">
                 Browse Events
               </Link>
@@ -257,7 +257,7 @@ const DashboardPage: React.FC = () => {
                         <Calendar className="w-7 h-7 text-white" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 mb-1">
+                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
                           {booking.event?.title || 'Event'}
                         </h3>
                         <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
@@ -343,7 +343,7 @@ const DashboardPage: React.FC = () => {
                         <QrCode className="w-7 h-7 text-emerald-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 mb-1">
+                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
                           {booking.event?.title || 'Event'}
                         </h3>
                         <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
@@ -435,7 +435,7 @@ const DashboardPage: React.FC = () => {
                         <Calendar className="w-7 h-7 text-white" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 mb-1">{event.title}</h3>
+                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{event.title}</h3>
                         <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
                           <span className="flex items-center gap-1">
                             <Users className="w-3.5 h-3.5" />
