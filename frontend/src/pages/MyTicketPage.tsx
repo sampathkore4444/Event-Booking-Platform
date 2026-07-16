@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { bookingService } from '../services/booking.service';
 import { useTranslation } from '../hooks/useTranslation';
+import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 

@@ -89,6 +89,8 @@ class EventResponse(EventBase):
 from app.schemas.category import CategoryResponse  # noqa: E402, F811
 from app.schemas.user import UserResponse  # noqa: E402, F811
 
+EventResponse.model_rebuild()
+
 
 class EventListResponse(BaseModel):
     events: List[EventResponse]

@@ -57,6 +57,8 @@ class BookingResponse(BookingBase):
 from app.schemas.event import EventResponse  # noqa: E402, F811
 from app.schemas.user import UserResponse  # noqa: E402, F811
 
+BookingResponse.model_rebuild()
+
 
 class BookingListResponse(BaseModel):
     bookings: List[BookingResponse]

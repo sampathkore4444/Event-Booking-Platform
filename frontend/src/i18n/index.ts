@@ -11,7 +11,7 @@
 export type Language = 'en' | 'km' | 'pt-BR' | 'hi';
 
 interface Translations {
-  [key: string]: string | Translations;
+  [key: string]: string | Translations | string[];
 }
 
 const translations: Record<Language, Translations> = {
@@ -116,17 +116,18 @@ export function initLanguage(): Language {
 
 export function t(path: string): string {
   const keys = path.split('.');
-  let value: string | Translations = translations[currentLanguage];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let value: any = translations[currentLanguage];
 
   for (const key of keys) {
     if (typeof value === 'object' && value !== null && key in value) {
-      value = (value as Translations)[key];
+      value = value[key];
     } else {
       // Fallback to English
       value = translations['en'];
       for (const fallbackKey of keys) {
         if (typeof value === 'object' && value !== null && fallbackKey in value) {
-          value = (value as Translations)[fallbackKey];
+          value = value[fallbackKey];
         } else {
           return path; // Key not found
         }
