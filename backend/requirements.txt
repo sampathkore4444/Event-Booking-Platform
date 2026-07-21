@@ -37,7 +37,7 @@ stripe==7.8.0
 
 # QR Code generation (for Cambodia payments)
 qrcode[pil]==7.4.2
-Pillow==10.1.0
+Pillow==12.3.0
 
 # CORS
 cors==1.0.1
